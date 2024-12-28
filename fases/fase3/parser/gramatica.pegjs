@@ -1,12 +1,19 @@
 {{
+    
+    // let identificadores = []
+
+    // import { identificadores } from '../index.js'
+
     import { ids, usos} from '../index.js'
     import { ErrorReglas } from './error.js';
     import { errores } from '../index.js'
-    import * as n from '../parser/visitor/CST.js';
+
+    import * as n from './visitor/CST.js';
 }}
 
 gramatica
   = _ prods:producciones+ _ {
+    console.log("here un gramatica")
     let duplicados = ids.filter((item, index) => ids.indexOf(item) !== index);
     if (duplicados.length > 0) {
         errores.push(new ErrorReglas("Regla duplicada: " + duplicados[0]));
@@ -17,11 +24,12 @@ gramatica
     if (noEncontrados.length > 0) {
         errores.push(new ErrorReglas("Regla no encontrada: " + noEncontrados[0]));
     }
+    prods[0].start = true;
     return prods;
   }
 
 producciones
-  = _ id:identificador _ alias:$(literales)? _ "=" _ expr:opciones (_";")? {
+  = _ id:identificador _ alias:(literales)? _ "=" _ expr:opciones (_";")? {
     ids.push(id);
     return new n.Producciones(id, expr, alias);
   }
@@ -43,38 +51,34 @@ expresion
 
 etiqueta = ("@")? _ id:identificador _ ":" (varios)?
 
-varios = ("!"(!".") /"$"/"@"/"&")
+varios = ("!"/"$"/"@"/"&")
 
 expresiones
   = id:identificador {
-    usos.push(id);
-    return new n.idRel(id);
+    usos.push(id)
+    return new n.Identificador(id);
   }
   / val:$literales isCase:"i"? {
     return new n.String(val.replace(/['"]/g, ''), isCase);
   }
-  / "(" _ opciones:opciones _ ")"{
-    return new n.grupo(opciones);
-  }
-
-  / exprs:corchetes isCase:"i"?{
-    //console.log("Corchetes", exprs);
-    return new n.Corchetes(exprs, isCase);
-
+  / "(" _ @opciones _ ")"
+  / chars:clase isCase:"i"? {
+    return new n.Clase(chars, isCase);
   }
   / "." {
-    return new n.Any(true);
+    return new n.Punto();
   }
-  / "!."{
-    return new n.finCadena();
+  / "!." {
+    return new n.Fin();
   }
 
 // conteo = "|" parteconteo _ (_ delimitador )? _ "|"
 
-conteo = "|" _ (numero / id:identificador) _ "|"
-        / "|" _ (numero / id:identificador)? _ ".." _ (numero / id2:identificador)? _ "|"
-        / "|" _ (numero / id:identificador)? _ "," _ opciones _ "|"
-        / "|" _ (numero / id:identificador)? _ ".." _ (numero / id2:identificador)? _ "," _ opciones _ "|"
+conteo
+  = "|" _ (numero / id:identificador) _ "|"
+  / "|" _ (numero / id:identificador)? _ ".." _ (numero / id2:identificador)? _ "|"
+  / "|" _ (numero / id:identificador)? _ "," _ opciones _ "|"
+  / "|" _ (numero / id:identificador)? _ ".." _ (numero / id2:identificador)? _ "," _ opciones _ "|"
 
 // parteconteo = identificador
 //             / [0-9]? _ ".." _ [0-9]?
@@ -83,33 +87,18 @@ conteo = "|" _ (numero / id:identificador) _ "|"
 // delimitador =  "," _ expresion
 
 // Regla principal que analiza corchetes con contenido
-corchetes
-    = "[" contenido:(rango / contenido)+ "]" {
-        return contenido;
-    }
+clase
+  = "[" @contenidoClase+ "]"
 
-// Regla para validar un rango como [A-Z]
-rango
-    = inicio:$caracter "-" fin:$caracter {
-        return new  n.rango(inicio, fin);
-    }
+contenidoClase
+  = bottom:$caracter "-" top:$caracter {
+    return new n.Rango(bottom, top);
+  }
+  / $caracter
 
-// Regla para caracteres individuales
 caracter
-    = [a-zA-Z0-9_ ] 
-
-// Coincide con cualquier contenido que no incluya "]"
-contenido
-    = contenido: (corchete / @$texto){
-        return new n.literalRango(contenido);
-    }
-
-corchete
-    = "[" contenido "]"
-
-texto
-    = "\\" escape
-    /[^\[\]]
+  = [^\[\]\\]
+  / "\\" .
 
 literales
   = '"' @stringDobleComilla* '"'
@@ -144,14 +133,11 @@ secuenciaFinLinea = "\r\n" / "\n" / "\r" / "\u2028" / "\u2029"
 //     "\"" [^"]* "\""
 //     / "'" [^']* "'"
     
-
 numero = [0-9]+
 
 identificador = [_a-z]i[_a-z0-9]i* { return text() }
 
-
 _ = (Comentarios /[ \t\n\r])*
-
 
 Comentarios = 
     "//" [^\n]* 

@@ -1,7 +1,9 @@
 import * as monaco from 'https://cdn.jsdelivr.net/npm/monaco-editor@0.50.0/+esm';
 import { parse } from './parser/gramatica.js';
-import Tokenizer from './parser/visitor/Tokenizador.js';
-import { ErrorReglas } from './parser/error.js';
+import generateParser from './parser/visitor/utils.js';
+
+
+
 
 export let ids = [];
 export let usos = [];
@@ -37,14 +39,17 @@ const analizar = () => {
             salida.setValue(`Error: ${errores[0].message}`);
             return;
         } else {
-           
-            const tokenizer = new Tokenizer();
-            const fileContents = tokenizer.generateTokenizer(cst);
-            const blob = new Blob([fileContents], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const button = document.getElementById('ButtomDownload');
-            button.href = url;
-            salida.setValue(fileContents);
+            generateParser(cst)
+            .then((fileContents) => {
+                const blob = new Blob([fileContents], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const button = document.getElementById('ButtomDownload');
+                button.href = url;
+                salida.setValue(fileContents);
+            })
+            .catch((error) => {
+                console.error('Error al generar el parser:', error);
+            });
         }
 
         // salida.setValue("Análisis Exitoso");
