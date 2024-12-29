@@ -16,7 +16,6 @@ export default class FortranTranslator {
         function peg_${node.id}() result(accept)
             logical :: accept
             integer :: i
-            integer :: tmpcursor
             accept = .false.
             ${node.expr.accept(this)}
             ${
@@ -83,23 +82,18 @@ export default class FortranTranslator {
                 `;
             case "&":
                 return `
-                tmpcursor = cursor
                 if (.not. (${condition})) then
                     accept = .false.
                     return
                 end if
-                cursor = tmpcursor
                 accept = .true.
             `;
             case "!":
                 return `
-                tmpcursor = cursor
                 if (${condition}) then
                     accept = .false.
-                    cursor = tmpcursor
                     return
                 end if
-                cursor = tmpcursor
                 accept = .true.
                     `;
             default:
