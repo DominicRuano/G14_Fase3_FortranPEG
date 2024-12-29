@@ -16,7 +16,7 @@ export default class FortranTranslator {
         function peg_${node.id}() result(accept)
             logical :: accept
             integer :: i
-
+            integer :: tmpcursor
             accept = .false.
             ${node.expr.accept(this)}
             ${
@@ -69,7 +69,7 @@ export default class FortranTranslator {
      */
     visitExpresion(node) {
         const condition = node.expr.accept(this);
-        switch (node.qty) {
+        switch (node.qty || node.label) {
             case '+':
                 return `
                 if (.not. (${condition})) then
@@ -81,13 +81,36 @@ export default class FortranTranslator {
                     end if
                 end do
                 `;
+            case "&":
+                return `
+                tmpcursor = cursor
+                if (.not. (${condition})) then
+                    accept = .false.
+                    return
+                end if
+                cursor = tmpcursor
+                accept = .true.
+            `;
+            case "!":
+                return `
+                tmpcursor = cursor
+                if (${condition}) then
+                    accept = .false.
+                    cursor = tmpcursor
+                    return
+                end if
+                cursor = tmpcursor
+                accept = .true.
+                    `;
             default:
                 return `
                 if (.not. (${condition})) then
                     cycle
                 end if
                 `;
+            
         }
+        
     }
     /**
      * @param {CST.String} node
