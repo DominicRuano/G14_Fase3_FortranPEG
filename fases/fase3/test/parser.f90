@@ -22,7 +22,6 @@ module parser
 
        input = str
        cursor = 1
-
        res = peg_s()
    end function parse
 
@@ -42,12 +41,14 @@ module parser
                
                
                lexemeStart = cursor
-               if(.not. acceptString('hols como slfksdjf')) cycle
+               if(.not. acceptString('fizz')) cycle
+               
                expr_0_0 = consumeInput()
-       
+               
                if (.not. acceptEOF()) cycle
                
                res = toStr(expr_0_0)
+
 
 
                exit

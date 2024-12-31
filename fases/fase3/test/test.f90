@@ -2,7 +2,7 @@ program test
     use parser
     implicit none
     character(len=100) :: filename
-    character(len=:), allocatable :: input
+    character(len=:), allocatable :: input, res
     integer :: u, len
     logical :: exists
 
@@ -18,7 +18,9 @@ program test
         open (1, file=filename, status='old', action='read', access='stream', form='unformatted')
         allocate (character(len=len) :: input)
         read (1) input
-        call parse(input)
+        
+        res = parse(input)
+        print *, res
     else
         print *, "error: file is not present"
         stop

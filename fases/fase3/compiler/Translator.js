@@ -79,9 +79,9 @@ export default class FortranTranslator {
                         return `${
                             expr instanceof CST.Identificador
                                 ? getReturnType(
-                                      getActionId(expr.id, i),
-                                      this.actionReturnTypes
-                                  )
+                                        getActionId(expr.id, i),
+                                        this.actionReturnTypes
+                                    )
                                 : 'character(len=:), allocatable'
                         } :: expr_${i}_${j}`;
                     })
