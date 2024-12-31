@@ -1,7 +1,8 @@
 import * as monaco from 'https://cdn.jsdelivr.net/npm/monaco-editor@0.50.0/+esm';
 import { parse } from './parser/gramatica.js';
-import generateParser from './parser/visitor/utils.js';
-/** @typedef {import('./visitor/CST.js').Producciones} Produccion*/
+import { generateParser } from './compiler/utils.js';
+
+/** @typedef {import('./visitor/CST.js').Grammar} Grammar*/
 /** @typedef {import('./visitor/Visitor.js').default<string>} Visitor*/
 
 export let ids = [];
@@ -27,13 +28,19 @@ const salida = monaco.editor.create(document.getElementById('salida'), {
 let decorations = [];
 
 // Analizar contenido del editor
-/** @type {Produccion[]} */
+/** @type {Grammar} */
 let cst;
+const noCatch = false;
 const analizar = () => {
     const entrada = editor.getValue();
     ids.length = 0;
     usos.length = 0;
     errores.length = 0;
+    if (noCatch) {
+        cst = parse(entrada);
+        salida.setValue('Análisis Exitoso');
+        return;
+    }
     try {
         cst = parse(entrada);
 
@@ -42,7 +49,17 @@ const analizar = () => {
             cst = null;
             return;
         } else {
-            salida.setValue('Análisis Exitoso');
+            generateParser(cst)
+            .then((fileContents) => {
+                const blob = new Blob([fileContents], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const button = document.getElementById('BotonDescarga');
+                button.href = url;
+                salida.setValue(fileContents);
+            })
+            .catch((error) => {
+                console.error('Error al generar el parser:', error);
+            });
         }
 
         // salida.setValue("Análisis Exitoso");
@@ -90,30 +107,6 @@ const analizar = () => {
 // Escuchar cambios en el contenido del editor
 editor.onDidChangeModelContent(() => {
     analizar();
-});
-
-let downloadHappening = false;
-const button = document.getElementById('BotonDescarga');
-button.addEventListener('click', () => {
-    if (downloadHappening) return;
-    if (!cst) {
-        alert('Escribe una gramatica valida');
-        return;
-    }
-    let url;
-    generateParser(cst)
-        .then((fileContents) => {
-            const blob = new Blob([fileContents], { type: 'text/plain' });
-            url = URL.createObjectURL(blob);
-            button.href = url;
-            downloadHappening = true;
-            button.click();
-        })
-        .finally(() => {
-            URL.revokeObjectURL(url);
-            button.href = '#';
-            downloadHappening = false;
-        });
 });
 
 // CSS personalizado para resaltar el error y agregar un warning

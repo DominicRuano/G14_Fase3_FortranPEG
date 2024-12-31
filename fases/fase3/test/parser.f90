@@ -1,111 +1,151 @@
+
+!auto-generated
 module parser
-    implicit none
+   implicit none
+   character(len=:), allocatable, private :: input
+   integer, private :: savePoint, lexemeStart, cursor
 
-contains
+   interface toStr
+       module procedure intToStr
+       module procedure strToStr
+   end interface
+   
+   
 
-subroutine parse(input)
-    character(len=:), intent(inout), allocatable :: input
-    do while (len(input) > 0)
-        print *, nextsym(input)
-    end do
-end subroutine parse
+   contains
+   
+   
 
-function nextsym(input) result(lexval)
-    character(len=:), intent(inout), allocatable :: input
-    character(len=:), allocatable :: lexval
-    integer :: i
-    logical :: is_int, is_str, is_space
+   function parse(str) result(res)
+       character(len=:), allocatable :: str
+       character(len=:), allocatable :: res
 
-    lexval = ""
-    i = 1
-    is_int = .false.
-    is_str = .false.
-    is_space = .false.
+       input = str
+       cursor = 1
 
-    do while (i <= len(input))
-        ! integer
-        if (input(i:i) >= '0' .and. input(i:i) <= '9') then
-            if (is_str) then
-                input = input(i:)
-                lexval = lexval // ' - string'
-                return
-            else if (is_space) then
-                input = input(i:)
-                lexval = lexval // ' - whitespace'
-                return
-            end if
-            is_int = .true.
-            lexval = lexval // input(i:i)
-        
-        ! string
-        else if (input(i:i) >= 'A' .and. input(i:i) <= 'Z' .or. input(i:i) >= 'a' .and. input(i:i) <= 'z') then
-            if (is_int) then
-                input = input(i:)
-                lexval = lexval // ' - integer'
-                return
-            else if (is_space) then
-                input = input(i:)
-                lexval = lexval // ' - whitespace'
-                return
-            end if
-            is_str = .true.
-            lexval = lexval // input(i:i)
-        
-        ! whitespace
-        else if (input(i:i) == ' ' .or. input(i:i) <= char(9) .or. input(i:i) == char(10)) then
-            if (is_int) then
-                input = input(i:)
-                lexval = lexval // ' - integer'
-                return
-            else if (is_str) then
-                input = input(i:)
-                lexval = lexval // ' - string'
-                return
-            else if (is_space) then
-                input = input(i:)
-                lexval = lexval // ' - whitespace'
-                return
-            end if
-            is_space = .true.
-            if (input(i:i) == ' ') lexval = lexval // '_'
-            if (input(i:i) == char(9)) lexval = lexval // '\t'
-            if (input(i:i) == char(10)) lexval = lexval // '\n'
-        
-        ! error
-        else
-            if (is_int) then
-                input = input(i:)
-                lexval = lexval // ' - integer'
-                return
-            else if (is_str) then
-                input = input(i:)
-                lexval = lexval // ' - string'
-                return
-            end if
-            lexval = input(i:i) // " - error"
-            input = input(i+1:)
-            return
-        end if
+       res = peg_s()
+   end function parse
 
-        i = i + 1
-    end do
+   
+   function peg_s() result (res)
+       character(len=:), allocatable :: res
+       character(len=:), allocatable :: expr_0_0
+       integer :: i
 
-    ! eof
-    input = input(i:)
-    if (is_int) then
-        input = input(i:)
-        lexval = lexval // ' - integer'// char(10) //' \0 - eof'
-        return
-    else if (is_space) then
-        input = input(i:)
-        lexval = lexval // ' - whitespace'// char(10) //' \0 - eof'
-        return
-    else if (is_str) then
-        input = input(i:)
-        lexval = lexval // ' - string'// char(10) //' \0 - eof'
-        return
-    end if
-    
-end function nextsym
+       savePoint = cursor
+       
+       do i = 0, 1
+           select case(i)
+           
+           case(0)
+               cursor = savePoint
+               
+               
+               lexemeStart = cursor
+               if(.not. acceptString('hols como slfksdjf')) cycle
+               expr_0_0 = consumeInput()
+       
+               if (.not. acceptEOF()) cycle
+               
+               res = toStr(expr_0_0)
 
+
+               exit
+           
+           case default
+               call pegError()
+           end select
+       end do
+
+   end function peg_s
+
+
+   
+
+   function acceptString(str) result(accept)
+       character(len=*) :: str
+       logical :: accept
+       integer :: offset
+
+       offset = len(str) - 1
+       if (str /= input(cursor:cursor + offset)) then
+           accept = .false.
+           return
+       end if
+       cursor = cursor + len(str)
+       accept = .true.
+   end function acceptString
+
+   function acceptRange(bottom, top) result(accept)
+       character(len=1) :: bottom, top
+       logical :: accept
+
+       if(.not. (input(cursor:cursor) >= bottom .and. input(cursor:cursor) <= top)) then
+           accept = .false.
+           return
+       end if
+       cursor = cursor + 1
+       accept = .true.
+   end function acceptRange
+
+   function acceptSet(set) result(accept)
+       character(len=1), dimension(:) :: set
+       logical :: accept
+
+       if(.not. (findloc(set, input(cursor:cursor), 1) > 0)) then
+           accept = .false.
+           return
+       end if
+       cursor = cursor + 1
+       accept = .true.
+   end function acceptSet
+
+   function acceptPeriod() result(accept)
+       logical :: accept
+
+       if (cursor > len(input)) then
+           accept = .false.
+           return
+       end if
+       cursor = cursor + 1
+       accept = .true.
+   end function acceptPeriod
+
+   function acceptEOF() result(accept)
+       logical :: accept
+
+       if(.not. cursor > len(input)) then
+           accept = .false.
+           return
+       end if
+       accept = .true.
+   end function acceptEOF
+
+   function consumeInput() result(substr)
+       character(len=:), allocatable :: substr
+
+       substr = input(lexemeStart:cursor - 1)
+   end function consumeInput
+
+   subroutine pegError()
+       print '(A,I1,A)', "Error at ", cursor, ": '"//input(cursor:cursor)//"'"
+
+       call exit(1)
+   end subroutine pegError
+
+   function intToStr(int) result(cast)
+       integer :: int
+       character(len=31) :: tmp
+       character(len=:), allocatable :: cast
+
+       write(tmp, '(I0)') int
+       cast = trim(adjustl(tmp))
+   end function intToStr
+
+   function strToStr(str) result(cast)
+       character(len=:), allocatable :: str
+       character(len=:), allocatable :: cast
+
+       cast = str
+   end function strToStr
 end module parser

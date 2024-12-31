@@ -1,4 +1,6 @@
 
+// Auto-generated
+
 /**
  * @template T
  * @typedef {import('./Visitor.js').default<T>} Visitor
@@ -118,12 +120,12 @@ export class Predicate {
      *
      * @param {string} returnType
 	 * @param {string} code
-	 * @param {{ [label: string]: string }=} arguments
+	 * @param {{ [label: string]: string }} params
      */
-    constructor(returnType, code, arguments) {
+    constructor(returnType, code, params) {
         this.returnType = returnType;
-        this.code = code;
-        this.arguments = arguments;
+		this.code = code;
+		this.params = params;
     }
 
     /**
@@ -169,7 +171,7 @@ export class Label {
     /**
      *
      * @param {Annotated} annotatedExpr
-	 * @param {boolean=} label
+	 * @param {string=} label
      */
     constructor(annotatedExpr, label) {
         this.annotatedExpr = annotatedExpr;
