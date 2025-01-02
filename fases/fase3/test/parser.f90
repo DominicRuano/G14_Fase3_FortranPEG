@@ -32,10 +32,6 @@ module parser
     function peg_s() result (res)
         character(len=:), allocatable :: res
         character(len=:), allocatable :: expr_0_0
-character(len=:), allocatable :: expr_0_1
-character(len=:), allocatable :: expr_0_2
-character(len=:), allocatable :: expr_0_3
-character(len=:), allocatable :: expr_0_4
         integer :: i
 
         savePoint = cursor
@@ -46,40 +42,27 @@ character(len=:), allocatable :: expr_0_4
             case(0)
                 cursor = savePoint
                 
-                expr_0_0 = peg_protocol()
+                
+            copyCursor = cursor
+            if ( acceptString('bb')) then
+                cursor = copyCursor
+                cycle
+            end if
+            cursor = copyCursor
+
+            copyCursor = cursor
+            if (.not. acceptString('aa')) then
+                cursor = copyCursor
+                cycle
+            end if
+            cursor = copyCursor
 
                 lexemeStart = cursor
-                if(.not. acceptString('://')) cycle
-                expr_0_1 = consumeInput()
-expr_0_2 = peg_domain()
-
-                lexemeStart = cursor
-                if (.not. acceptString('/')) exit
-                expr_0_3 = consumeInput()
-
-                lexemeStart = cursor
-
-                expr_0_4 = ""
-                isTerminal = .false.
-                do while (.not. cursor > len(input))
-                    copyCursor = cursor
-                    expr_0_4 = expr_0_4 // peg_path()
-                    if ( savePoint == cursor) then ! no se consumio nada en 0 o muchos
-                        ! Si llego aqui ocurrio un falso positivo en los errores
-                        ! por eso solo continua y los activa al salir del loop
-                        exit
-                    else if (copyCursor == cursor) then ! no se consumio nada luego de muchos
-                        ! Si llego aqui ocurrio un error y los errores estan desactivados
-                        ! Los reactiva y marca el error.
-                        isTerminal = .true.
-                        call pegError()
-                        exit
-                    end if
-                end do
-                isTerminal = .true.
+                if(.not. acceptString('aa')) cycle
+                expr_0_0 = consumeInput()
                 if (.not. acceptEOF()) cycle
                 
-                res = toStr(expr_0_0)//toStr(expr_0_1)//toStr(expr_0_2)//toStr(expr_0_3)//toStr(expr_0_4)
+                res = toStr(expr_0_0)
 
 
                 exit
@@ -90,123 +73,6 @@ expr_0_2 = peg_domain()
         end do
 
     end function peg_s
-
-    ! Inicio de la gramatica
-
-
-    function peg_protocol() result (res)
-        character(len=:), allocatable :: res
-        character(len=:), allocatable :: expr_0_0
-character(len=:), allocatable :: expr_0_1
-        integer :: i
-
-        savePoint = cursor
-        
-        do i = 0, 1
-            select case(i)
-            
-            case(0)
-                cursor = savePoint
-                
-                
-                lexemeStart = cursor
-                if(.not. acceptString('http')) cycle
-                expr_0_0 = consumeInput()
-
-                lexemeStart = cursor
-                if (.not. acceptString('s')) exit
-                expr_0_1 = consumeInput()
-                
-                
-                res = toStr(expr_0_0)//toStr(expr_0_1)
-
-
-                exit
-            
-            case default
-                call pegError()
-            end select
-        end do
-
-    end function peg_protocol
-
-    ! Inicio de la gramatica
-
-
-    function peg_domain() result (res)
-        character(len=:), allocatable :: res
-        character(len=:), allocatable :: expr_0_0
-        integer :: i
-
-        savePoint = cursor
-        
-        do i = 0, 1
-            select case(i)
-            
-            case(0)
-                cursor = savePoint
-                
-                
-                lexemeStart = cursor
-                if (.not. (acceptSet(['.','-']) .or. acceptRange('a', 'z') .or. acceptRange('A', 'Z') .or. acceptRange('0', '9'))) cycle
-
-                do while (.not. cursor > len(input))
-                    if (.not. (acceptSet(['.','-']) .or. acceptRange('a', 'z') .or. acceptRange('A', 'Z') .or. acceptRange('0', '9'))) exit
-                end do
-
-                expr_0_0 = consumeInput()
-                
-                
-                res = toStr(expr_0_0)
-
-
-                exit
-            
-            case default
-                call pegError()
-            end select
-        end do
-
-    end function peg_domain
-
-    ! Inicio de la gramatica
-
-
-    function peg_path() result (res)
-        character(len=:), allocatable :: res
-        character(len=:), allocatable :: expr_0_0
-        integer :: i
-
-        savePoint = cursor
-        
-        do i = 0, 1
-            select case(i)
-            
-            case(0)
-                cursor = savePoint
-                
-                
-                lexemeStart = cursor
-                if (.not. (acceptSet(['.','_','/','-']) .or. acceptRange('a', 'z') .or. acceptRange('A', 'Z') .or. acceptRange('0', '9'))) cycle
-
-                do while (.not. cursor > len(input))
-                    if (.not. (acceptSet(['.','_','/','-']) .or. acceptRange('a', 'z') .or. acceptRange('A', 'Z') .or. acceptRange('0', '9'))) exit
-                end do
-
-                expr_0_0 = consumeInput()
-                
-                
-                res = toStr(expr_0_0)
-
-
-                exit
-            
-            case default
-                call pegError()
-            end select
-        end do
-
-    end function peg_path
 
     ! Inicio de la gramatica
 

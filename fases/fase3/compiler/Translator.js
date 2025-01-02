@@ -118,6 +118,7 @@ export default class FortranTranslator {
      */
     visitUnion(node) {
         console.log("here on visitUnion");
+        console.log("node union: ", node);
         const matchExprs = node.exprs.filter(
             (expr) => expr instanceof CST.Pluck
         );
@@ -182,24 +183,16 @@ export default class FortranTranslator {
      */
     visitAnnotated(node) {
         console.log("here on visitAnnotated");
+        console.log("node annotated: ", node);
         if (node.qty && typeof node.qty === 'string') {
             if (node.expr instanceof CST.Identificador) {
                 // TODO: Implement quantifiers (i.e., ?, *, +)
-                console.log("node here", node);
-                var temp = `${getExprId(
-                    this.currentChoice,
-                    this.currentExpr
-                )} = ${node.expr.accept(this)}`; // aqui 
 
-                var temp2 = Template.idExpr({
+                return Template.idExpr({
                     quantifier: node.qty,
                     expr: node.expr.accept(this),
                     destination: getExprId(this.currentChoice, this.currentExpr),
                 });
-                
-                console.log("temp: ", temp);
-                console.log("temp2: ", temp2);
-                return temp2;
             }
             return Template.strExpr({
                 quantifier: node.qty,
@@ -229,7 +222,13 @@ export default class FortranTranslator {
      */
     visitAssertion(node) {
         console.log("here on visitAssertion");
-        throw new Error('Method not implemented.');
+        return `
+            copyCursor = cursor
+            if (.not. acceptString('${node.assertion.val}')) then
+                cursor = copyCursor
+                cycle
+            end if
+            cursor = copyCursor`;
     }
 
     /**
@@ -238,7 +237,13 @@ export default class FortranTranslator {
      */
     visitNegAssertion(node) {
         console.log("here on visitNegAssertion");
-        throw new Error('Method not implemented.');
+        return `
+            copyCursor = cursor
+            if ( acceptString('${node.assertion.val}')) then
+                cursor = copyCursor
+                cycle
+            end if
+            cursor = copyCursor`;
     }
 
     /**
