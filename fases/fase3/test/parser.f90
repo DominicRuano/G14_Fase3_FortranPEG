@@ -31,7 +31,7 @@ module parser
     
     function peg_s() result (res)
         character(len=:), allocatable :: res
-        character(len=:), allocatable :: expr_0_0
+        
         integer :: i
 
         savePoint = cursor
@@ -43,27 +43,15 @@ module parser
                 cursor = savePoint
                 
                 
-            copyCursor = cursor
-            if ( acceptString('bb')) then
-                cursor = copyCursor
-                cycle
-            end if
+                copyCursor = cursor
+                if ( acceptString('')) then
+                    cursor = copyCursor
+                    cycle
+                end if
             cursor = copyCursor
-
-            copyCursor = cursor
-            if (.not. acceptString('aa')) then
-                cursor = copyCursor
-                cycle
-            end if
-            cursor = copyCursor
-
-                lexemeStart = cursor
-                if(.not. acceptString('aa')) cycle
-                expr_0_0 = consumeInput()
-                if (.not. acceptEOF()) cycle
+            if (.not. acceptEOF()) cycle
                 
-                res = toStr(expr_0_0)
-
+            res = ""
 
                 exit
             

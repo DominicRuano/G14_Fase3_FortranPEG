@@ -347,9 +347,15 @@ export const idExpr = (data) => {
 * }} data
 * @returns
 */
-export const strResultExpr = (data) => `
-                res = ${data.exprs.map((expr) => `toStr(${expr})`).join('//')}
-`;
+export const strResultExpr = (data) => {
+    if (data.exprs && data.exprs.length > 0) {
+        return `
+            res = ${data.exprs.map((expr) => `toStr(${expr})`).join('//')};
+        `;
+    }
+    return `
+            res = ""`;
+};
 
 /**
 *
