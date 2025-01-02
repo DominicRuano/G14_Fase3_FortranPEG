@@ -21,6 +21,7 @@ program test
         
         res = parse(input)
         print *, res
+        print *, "END OF PROGRAM"
     else
         print *, "error: file is not present"
         stop

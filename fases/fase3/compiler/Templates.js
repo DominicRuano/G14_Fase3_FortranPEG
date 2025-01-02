@@ -13,121 +13,129 @@
 export const main = (data) => `
 !auto-generated
 module parser
-   implicit none
-   character(len=:), allocatable, private :: input
-   integer, private :: savePoint, lexemeStart, cursor
+    implicit none
+    character(len=:), allocatable, private :: input
+    integer, private :: savePoint, lexemeStart, cursor, copyCursor
+    logical, private :: isTerminal = .true.
 
-   interface toStr
-       module procedure intToStr
-       module procedure strToStr
-   end interface
-   
-   ${data.beforeContains}
+    interface toStr
+        module procedure intToStr
+        module procedure strToStr
+    end interface
 
-   contains
-   
-   ${data.afterContains}
+    ${data.beforeContains}
 
-   function parse(str) result(res)
-       character(len=:), allocatable :: str
-       ${data.startingRuleType} :: res
+    contains
 
-       input = str
-       cursor = 1
+    ${data.afterContains}
 
-       res = ${data.startingRuleId}()
-   end function parse
+    function parse(str) result(res)
+        character(len=:), allocatable :: str
+        ${data.startingRuleType} :: res
 
-   ${data.rules.join('\n')}
+        input = str
+        cursor = 1
 
-   ${data.actions.join('\n')}
+        res = ${data.startingRuleId}()
+    end function parse
 
-   function acceptString(str) result(accept)
-       character(len=*) :: str
-       logical :: accept
-       integer :: offset
+    ! Inicio de las reglas
+    ${data.rules.join('\n')}
 
-       offset = len(str) - 1
-       if (str /= input(cursor:cursor + offset)) then
-           accept = .false.
-           return
-       end if
-       cursor = cursor + len(str)
-       accept = .true.
-   end function acceptString
+    ! Inicio de las acciones
+    ${data.actions.join('\n')}
 
-   function acceptRange(bottom, top) result(accept)
-       character(len=1) :: bottom, top
-       logical :: accept
+    ! Funciones auxiliares
+    function acceptString(str) result(accept)
+        character(len=*) :: str
+        logical :: accept
+        integer :: offset
 
-       if(.not. (input(cursor:cursor) >= bottom .and. input(cursor:cursor) <= top)) then
-           accept = .false.
-           return
-       end if
-       cursor = cursor + 1
-       accept = .true.
-   end function acceptRange
+        offset = len(str) - 1
+        if (str /= input(cursor:cursor + offset)) then
+            accept = .false.
+            return
+        end if
+        cursor = cursor + len(str)
+        accept = .true.
+    end function acceptString
 
-   function acceptSet(set) result(accept)
-       character(len=1), dimension(:) :: set
-       logical :: accept
+    function acceptRange(bottom, top) result(accept)
+        character(len=1) :: bottom, top
+        logical :: accept
 
-       if(.not. (findloc(set, input(cursor:cursor), 1) > 0)) then
-           accept = .false.
-           return
-       end if
-       cursor = cursor + 1
-       accept = .true.
-   end function acceptSet
+        if(.not. (input(cursor:cursor) >= bottom .and. input(cursor:cursor) <= top)) then
+            accept = .false.
+            return
+        end if
+        cursor = cursor + 1
+        accept = .true.
+    end function acceptRange
 
-   function acceptPeriod() result(accept)
-       logical :: accept
+    function acceptSet(set) result(accept)
+        character(len=1), dimension(:) :: set
+        logical :: accept
 
-       if (cursor > len(input)) then
-           accept = .false.
-           return
-       end if
-       cursor = cursor + 1
-       accept = .true.
-   end function acceptPeriod
+        if(.not. (findloc(set, input(cursor:cursor), 1) > 0)) then
+            accept = .false.
+            return
+        end if
+        cursor = cursor + 1
+        accept = .true.
+    end function acceptSet
 
-   function acceptEOF() result(accept)
-       logical :: accept
+    function acceptPeriod() result(accept)
+        logical :: accept
 
-       if(.not. cursor > len(input)) then
-           accept = .false.
-           return
-       end if
-       accept = .true.
-   end function acceptEOF
+        if (cursor > len(input)) then
+            accept = .false.
+            return
+        end if
+        cursor = cursor + 1
+        accept = .true.
+    end function acceptPeriod
 
-   function consumeInput() result(substr)
-       character(len=:), allocatable :: substr
+    function acceptEOF() result(accept)
+        logical :: accept
 
-       substr = input(lexemeStart:cursor - 1)
-   end function consumeInput
+        if(.not. cursor > len(input)) then
+            accept = .false.
+            return
+        end if
+        accept = .true.
+    end function acceptEOF
 
-   subroutine pegError()
-       print '(A,I1,A)', "Error at ", cursor, ": '"//input(cursor:cursor)//"'"
+    function consumeInput() result(substr)
+        character(len=:), allocatable :: substr
 
-       call exit(1)
-   end subroutine pegError
+        substr = input(lexemeStart:cursor - 1)
+    end function consumeInput
 
-   function intToStr(int) result(cast)
-       integer :: int
-       character(len=31) :: tmp
-       character(len=:), allocatable :: cast
+    subroutine pegError()
+        if ( isTerminal ) then
+            print *, "Error at ", cursor, ": '", input(cursor:cursor), "'"
+            call exit(1)
+        else 
+            print *, "Falso positivo at ", cursor, ": '", input(cursor:cursor), "' (borrar antes de la calificaion)"
+        end if
 
-       write(tmp, '(I0)') int
-       cast = trim(adjustl(tmp))
-   end function intToStr
+    end subroutine pegError
 
-   function strToStr(str) result(cast)
-       character(len=:), allocatable :: str
-       character(len=:), allocatable :: cast
+    function intToStr(int) result(cast)
+        integer :: int
+        character(len=31) :: tmp
+        character(len=:), allocatable :: cast
 
-       cast = str
-   end function strToStr
+        write(tmp, '(I0)') int
+        cast = trim(adjustl(tmp))
+    end function intToStr
+
+    function strToStr(str) result(cast)
+        character(len=:), allocatable :: str
+        character(len=:), allocatable :: cast
+
+        cast = str
+    end function strToStr
 end module parser
 `;
 
@@ -142,14 +150,16 @@ end module parser
 * @returns
 */
 export const rule = (data) => `
-   function peg_${data.id}() result (res)
-       ${data.returnType} :: res
-       ${data.exprDeclarations.join('\n')}
-       integer :: i
+    function peg_${data.id}() result (res)
+        ${data.returnType} :: res
+        ${data.exprDeclarations.join('\n')}
+        integer :: i
 
-       savePoint = cursor
-       ${data.expr}
-   end function peg_${data.id}
+        savePoint = cursor
+        ${data.expr}
+    end function peg_${data.id}
+
+    ! Inicio de la gramatica
 `;
 
 /**
@@ -160,20 +170,20 @@ export const rule = (data) => `
 * @returns
 */
 export const election = (data) => `
-       do i = 0, ${data.exprs.length}
-           select case(i)
-           ${data.exprs.map(
-               (expr, i) => `
-           case(${i})
-               cursor = savePoint
-               ${expr}
-               exit
-           `
-           )}
-           case default
-               call pegError()
-           end select
-       end do
+        do i = 0, ${data.exprs.length}
+            select case(i)
+            ${data.exprs.map(
+                (expr, i) => `
+            case(${i})
+                cursor = savePoint
+                ${expr}
+                exit
+            `
+            ).join('\n')}
+            case default
+                call pegError()
+            end select
+        end do
 `;
 
 /**
@@ -186,9 +196,9 @@ export const election = (data) => `
 * @returns
 */
 export const union = (data) => `
-               ${data.exprs.join('\n')}
-               ${data.startingRule ? 'if (.not. acceptEOF()) cycle' : ''}
-               ${data.resultExpr}
+                ${data.exprs.join('\n')}
+                ${data.startingRule ? 'if (.not. acceptEOF()) cycle' : ''}
+                ${data.resultExpr}
 `;
 
 /**
@@ -201,28 +211,133 @@ export const union = (data) => `
 * @returns
 */
 export const strExpr = (data) => {
-   if (!data.quantifier) {
-       return `
-               lexemeStart = cursor
-               if(.not. ${data.expr}) cycle
-               ${data.destination} = consumeInput()
-       `;
-   }
-   switch (data.quantifier) {
-       case '+':
-           return `
-               lexemeStart = cursor
-               if (.not. ${data.expr}) cycle
-               do while (.not. cursor > len(input))
-                   if (.not. ${data.expr}) exit
-               end do
-               ${data.destination} = consumeInput()
-           `;
-       default:
-           throw new Error(
-               `'${data.quantifier}' quantifier needs implementation`
-           );
-   }
+    console.log("data en strExpr: ",data);
+    if (!data.quantifier) {
+        return `
+                lexemeStart = cursor
+                if(.not. ${data.expr}) cycle
+                ${data.destination} = consumeInput()`;
+    }
+    switch (data.quantifier) {
+        case '+':
+            return `
+                lexemeStart = cursor
+                if (.not. ${data.expr}) cycle
+
+                do while (.not. cursor > len(input))
+                    if (.not. ${data.expr}) exit
+                end do
+
+                ${data.destination} = consumeInput()`;
+        case '*':
+            return `
+                lexemeStart = cursor
+
+                do while (.not. cursor > len(input))
+                    if (.not. ${data.expr}) exit
+                end do
+
+                ${data.destination} = consumeInput()`;
+        case '?':
+            return `
+                lexemeStart = cursor
+                if (.not. ${data.expr}) exit
+                ${data.destination} = consumeInput()`;
+        default:
+            throw new Error(
+                `'${data.quantifier}' quantifier needs implementation`
+            );
+    }
+};
+
+
+/**
+*
+* @param {{
+    *  expr: string;
+    *  destination: string
+    *  quantifier?: string;
+    * }} data
+    * @returns
+    */
+export const idExpr = (data) => {
+    console.log("data en strExpr: ",data);
+    if (!data.quantifier) {
+        return `
+                lexemeStart = cursor
+                if(.not. ${data.expr}) exit
+                ${data.destination} = consumeInput()`;
+    }
+    switch (data.quantifier) {
+        case '+':
+            return `
+                lexemeStart = cursor
+
+                ${data.destination} = ${data.expr}
+                if (lexemeStart == cursor) cycle
+
+                isTerminal = .false.
+                do while (.not. cursor > len(input))
+                    copyCursor = cursor
+                    ${data.destination} = ${data.destination} // ${data.expr}
+                    if ( savePoint == cursor) then ! no se consumio nada en 0 o muchos
+                        ! Si llego aqui ocurrio un falso positivo en los errores
+                        ! por eso solo continua y los activa al salir del loop
+                        exit
+                    else if (copyCursor == cursor) then ! no se consumio nada luego de muchos
+                        ! Si llego aqui ocurrio un error y los errores estan desactivados
+                        ! Los reactiva y marca el error.
+                        isTerminal = .true.
+                        call pegError()
+                        exit
+                    end if
+                end do
+                isTerminal = .true.`;
+        case '*':
+            return `
+                lexemeStart = cursor
+
+                ${data.destination} = ""
+                isTerminal = .false.
+                do while (.not. cursor > len(input))
+                    copyCursor = cursor
+                    ${data.destination} = ${data.destination} // ${data.expr}
+                    if ( savePoint == cursor) then ! no se consumio nada en 0 o muchos
+                        ! Si llego aqui ocurrio un falso positivo en los errores
+                        ! por eso solo continua y los activa al salir del loop
+                        exit
+                    else if (copyCursor == cursor) then ! no se consumio nada luego de muchos
+                        ! Si llego aqui ocurrio un error y los errores estan desactivados
+                        ! Los reactiva y marca el error.
+                        isTerminal = .true.
+                        call pegError()
+                        exit
+                    end if
+                end do
+                isTerminal = .true.`;
+        case '?':
+            return `
+                lexemeStart = cursor
+
+                isTerminal = .false.
+                copyCursor = cursor
+                ${data.destination} = ${data.expr}
+                if ( savePoint == cursor) then ! no se consumio nada en 0 o muchos
+                    ! Si llego aqui ocurrio un falso positivo en los errores
+                    ! por eso solo continua y lo activa al salir del if
+                else if (copyCursor == cursor) then ! no se consumio nada luego de muchos
+                    ! Si llego aqui ocurrio un error y los errores estan desactivados
+                    ! Los reactiva y marca el error.
+                    isTerminal = .true.
+                    call pegError()
+                    exit
+                end if
+                isTerminal = .true.`;
+        default:
+            throw new Error(
+                `'${data.quantifier}' quantifier needs implementation`
+            );
+    }
 };
 
 /**
@@ -233,7 +348,7 @@ export const strExpr = (data) => {
 * @returns
 */
 export const strResultExpr = (data) => `
-               res = ${data.exprs.map((expr) => `toStr(${expr})`).join('//')}
+                res = ${data.exprs.map((expr) => `toStr(${expr})`).join('//')}
 `;
 
 /**
@@ -245,7 +360,7 @@ export const strResultExpr = (data) => `
 * @returns
 */
 export const fnResultExpr = (data) => `
-               res = ${data.fnId}(${data.exprs.join(', ')})
+                res = ${data.fnId}(${data.exprs.join(', ')})
 `;
 
 /**
@@ -261,12 +376,12 @@ export const fnResultExpr = (data) => `
 * @returns
 */
 export const action = (data) => {
-   const signature = data.signature.join(', ');
-   return `
-   function peg_${data.ruleId}_f${data.choice}(${signature}) result(res)
-       ${data.paramDeclarations.join('\n')}
-       ${data.returnType} :: res
-       ${data.code}
-   end function peg_${data.ruleId}_f${data.choice}
-   `;
+    const signature = data.signature.join(', ');
+    return `
+    function peg_${data.ruleId}_f${data.choice}(${signature}) result(res)
+        ${data.paramDeclarations.join('\n')}
+        ${data.returnType} :: res
+        ${data.code}
+    end function peg_${data.ruleId}_f${data.choice}
+    `;
 };

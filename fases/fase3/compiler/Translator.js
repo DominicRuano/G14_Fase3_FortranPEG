@@ -40,6 +40,7 @@ export default class FortranTranslator {
      * @this {Visitor}
      */
     visitGrammar(node) {
+        console.log("here on visitGrammar");
         const rules = node.rules.map((rule) => rule.accept(this));
 
         return Template.main({
@@ -60,6 +61,7 @@ export default class FortranTranslator {
      * @this {Visitor}
      */
     visitRegla(node) {
+        console.log("here on visitRegla");
         this.currentRule = node.id;
         this.currentChoice = 0;
 
@@ -99,6 +101,7 @@ export default class FortranTranslator {
      * @this {Visitor}
      */
     visitOpciones(node) {
+        console.log("here on visitOpciones");
         return Template.election({
             exprs: node.exprs.map((expr) => {
                 const translation = expr.accept(this);
@@ -106,6 +109,7 @@ export default class FortranTranslator {
                 return translation;
             }),
         });
+
     }
 
     /**
@@ -113,6 +117,7 @@ export default class FortranTranslator {
      * @this {Visitor}
      */
     visitUnion(node) {
+        console.log("here on visitUnion");
         const matchExprs = node.exprs.filter(
             (expr) => expr instanceof CST.Pluck
         );
@@ -158,6 +163,7 @@ export default class FortranTranslator {
      * @this {Visitor}
      */
     visitPluck(node) {
+        console.log("here on visitPluck");
         return node.labeledExpr.accept(this);
     }
 
@@ -166,6 +172,7 @@ export default class FortranTranslator {
      * @this {Visitor}
      */
     visitLabel(node) {
+        console.log("here on visitLabel");
         return node.annotatedExpr.accept(this);
     }
 
@@ -174,13 +181,25 @@ export default class FortranTranslator {
      * @this {Visitor}
      */
     visitAnnotated(node) {
+        console.log("here on visitAnnotated");
         if (node.qty && typeof node.qty === 'string') {
             if (node.expr instanceof CST.Identificador) {
                 // TODO: Implement quantifiers (i.e., ?, *, +)
-                return `${getExprId(
+                console.log("node here", node);
+                var temp = `${getExprId(
                     this.currentChoice,
                     this.currentExpr
-                )} = ${node.expr.accept(this)}`;
+                )} = ${node.expr.accept(this)}`; // aqui 
+
+                var temp2 = Template.idExpr({
+                    quantifier: node.qty,
+                    expr: node.expr.accept(this),
+                    destination: getExprId(this.currentChoice, this.currentExpr),
+                });
+                
+                console.log("temp: ", temp);
+                console.log("temp2: ", temp2);
+                return temp2;
             }
             return Template.strExpr({
                 quantifier: node.qty,
@@ -209,6 +228,7 @@ export default class FortranTranslator {
      * @this {Visitor}
      */
     visitAssertion(node) {
+        console.log("here on visitAssertion");
         throw new Error('Method not implemented.');
     }
 
@@ -217,6 +237,7 @@ export default class FortranTranslator {
      * @this {Visitor}
      */
     visitNegAssertion(node) {
+        console.log("here on visitNegAssertion");
         throw new Error('Method not implemented.');
     }
 
@@ -225,6 +246,7 @@ export default class FortranTranslator {
      * @this {Visitor}
      */
     visitPredicate(node) {
+        console.log("here on visitPredicate");
         return Template.action({
             ruleId: this.currentRule,
             choice: this.currentChoice,
@@ -246,6 +268,7 @@ export default class FortranTranslator {
      * @this {Visitor}
      */
     visitString(node) {
+        console.log("here on visitString");
         return `acceptString('${node.val}')`;
     }
 
@@ -254,6 +277,7 @@ export default class FortranTranslator {
      * @this {Visitor}
      */
     visitClase(node) {
+        console.log("here on visitClase");
         // [abc0-9A-Z]
         let characterClass = [];
         const set = node.chars
@@ -276,6 +300,7 @@ export default class FortranTranslator {
      * @this {Visitor}
      */
     visitRango(node) {
+        console.log("here on visitRango");
         return `acceptRange('${node.bottom}', '${node.top}')`;
     }
 
@@ -284,6 +309,7 @@ export default class FortranTranslator {
      * @this {Visitor}
      */
     visitIdentificador(node) {
+        console.log("here on visitIdentificador");
         return getRuleId(node.id) + '()';
     }
 
@@ -292,6 +318,7 @@ export default class FortranTranslator {
      * @this {Visitor}
      */
     visitPunto(node) {
+        console.log("here on visitPunto");
         return 'acceptPeriod()';
     }
 
@@ -300,6 +327,7 @@ export default class FortranTranslator {
      * @this {Visitor}
      */
     visitFin(node) {
+        console.log("here on visitFin");
         return 'if (.not. acceptEOF()) cycle';
     }
 }
