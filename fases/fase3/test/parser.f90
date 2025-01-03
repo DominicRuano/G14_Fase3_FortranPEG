@@ -31,7 +31,7 @@ module parser
     
     function peg_s() result (res)
         character(len=:), allocatable :: res
-        
+        character(len=:), allocatable :: expr_0_0
         integer :: i
 
         savePoint = cursor
@@ -42,16 +42,11 @@ module parser
             case(0)
                 cursor = savePoint
                 
+                expr_0_0 = peg_a0_f2()
+                if (.not. acceptEOF()) cycle
                 
-                copyCursor = cursor
-                if ( acceptString('')) then
-                    cursor = copyCursor
-                    cycle
-                end if
-            cursor = copyCursor
-            if (.not. acceptEOF()) cycle
-                
-            res = ""
+            res = toStr(expr_0_0);
+        
 
                 exit
             
@@ -66,6 +61,50 @@ module parser
 
 
     ! Inicio de las acciones
+    
+    function peg_a0_f2() result(res)
+        
+        character(len=:), allocatable :: res
+        integer :: i
+                
+        do i = 0, 2
+            select case(i)
+            
+            case(0)
+                cursor = savePoint
+                
+                
+                lexemeStart = cursor
+                if(.not. acceptString('hola')) cycle
+                expr_0_0 = consumeInput()
+                if (.not. acceptEOF()) cycle
+                
+            res = toStr(expr_0_0);
+        
+
+                exit
+            
+
+            case(1)
+                cursor = savePoint
+                
+                
+                lexemeStart = cursor
+                if(.not. acceptString('adios')) cycle
+                expr_1_0 = consumeInput()
+                if (.not. acceptEOF()) cycle
+                
+            res = toStr(expr_1_0);
+        
+
+                exit
+            
+            case default
+                call pegError()
+            end select
+        end do
+
+    end function peg_a0_f2
     
 
     ! Funciones auxiliares
