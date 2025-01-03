@@ -32,6 +32,8 @@ module parser
     function peg_s() result (res)
         character(len=:), allocatable :: res
         character(len=:), allocatable :: expr_0_0
+character(len=:), allocatable :: expr_0_1
+character(len=:), allocatable :: expr_0_2
         integer :: i
 
         savePoint = cursor
@@ -42,20 +44,12 @@ module parser
             case(0)
                 cursor = savePoint
                 
-                
-                lexemeStart = cursor
-                if (.not. acceptStringCaseInsensitive('hola')) cycle
+                expr_0_0 = peg_0_fd3()
 
-                do while (.not. cursor > len(input))
-                    if (.not. acceptStringCaseInsensitive('hola')) exit
-                end do
+                expr_0_1 = peg_0_fd4()
 
-                expr_0_0 = consumeInput()
-                if (.not. acceptEOF()) cycle
-                
-            res = toStr(expr_0_0);
-        
-
+                expr_0_2 = peg_0_fd5()
+			res = expr_0_0//expr_0_1//expr_0_2
                 exit
             
             case default
@@ -69,6 +63,210 @@ module parser
 
 
     ! Inicio de las acciones
+    
+    function peg_0_fd3() result(res)
+        character(len=:), allocatable :: expr_0_0
+character(len=:), allocatable :: expr_0_1
+character(len=:), allocatable :: expr_0_2
+character(len=:), allocatable :: expr_0_3
+character(len=:), allocatable :: expr_0_4
+character(len=:), allocatable :: expr_0_5
+character(len=:), allocatable :: expr_1_0
+character(len=:), allocatable :: expr_1_1
+character(len=:), allocatable :: expr_1_2
+character(len=:), allocatable :: expr_1_3
+character(len=:), allocatable :: expr_1_4
+character(len=:), allocatable :: expr_1_5
+character(len=:), allocatable :: expr_2_0
+character(len=:), allocatable :: expr_2_1
+character(len=:), allocatable :: expr_2_2
+character(len=:), allocatable :: expr_2_3
+character(len=:), allocatable :: expr_2_4
+character(len=:), allocatable :: expr_2_5
+        character(len=:), allocatable :: res
+        
+
+                        integer :: i
+savePoint = cursor
+
+        do i = 0, 2
+            select case(i)
+            
+            case(0)
+                cursor = savePoint
+                
+                
+                lexemeStart = cursor
+                if(.not. acceptString('a')) cycle
+                expr_0_0 = consumeInput()
+                
+                
+            res = toStr(expr_0_0);
+        
+
+                exit
+            
+
+            case(1)
+                cursor = savePoint
+                
+                
+                lexemeStart = cursor
+                if(.not. acceptString('b')) cycle
+                expr_1_0 = consumeInput()
+                
+                
+            res = toStr(expr_1_0);
+        
+
+                exit
+            
+            case default
+                call pegError()
+            end select
+        end do
+ 
+    end function peg_0_fd3
+    
+
+    function peg_0_fd4() result(res)
+        character(len=:), allocatable :: expr_0_0
+character(len=:), allocatable :: expr_0_1
+character(len=:), allocatable :: expr_0_2
+character(len=:), allocatable :: expr_0_3
+character(len=:), allocatable :: expr_0_4
+character(len=:), allocatable :: expr_0_5
+character(len=:), allocatable :: expr_1_0
+character(len=:), allocatable :: expr_1_1
+character(len=:), allocatable :: expr_1_2
+character(len=:), allocatable :: expr_1_3
+character(len=:), allocatable :: expr_1_4
+character(len=:), allocatable :: expr_1_5
+character(len=:), allocatable :: expr_2_0
+character(len=:), allocatable :: expr_2_1
+character(len=:), allocatable :: expr_2_2
+character(len=:), allocatable :: expr_2_3
+character(len=:), allocatable :: expr_2_4
+character(len=:), allocatable :: expr_2_5
+        character(len=:), allocatable :: res
+        
+
+                        integer :: i
+savePoint = cursor
+
+        do i = 0, 2
+            select case(i)
+            
+            case(0)
+                cursor = savePoint
+                
+                
+                lexemeStart = cursor
+                if(.not. acceptString('1')) cycle
+                expr_0_0 = consumeInput()
+                
+                
+            res = toStr(expr_0_0);
+        
+
+                exit
+            
+
+            case(1)
+                cursor = savePoint
+                
+                
+                lexemeStart = cursor
+                if(.not. acceptString('2')) cycle
+                expr_1_0 = consumeInput()
+                
+                
+            res = toStr(expr_1_0);
+        
+
+                exit
+            
+            case default
+                call pegError()
+            end select
+        end do
+ 
+    end function peg_0_fd4
+    
+
+    function peg_0_fd5() result(res)
+        character(len=:), allocatable :: expr_0_0
+character(len=:), allocatable :: expr_0_1
+character(len=:), allocatable :: expr_0_2
+character(len=:), allocatable :: expr_0_3
+character(len=:), allocatable :: expr_0_4
+character(len=:), allocatable :: expr_0_5
+character(len=:), allocatable :: expr_1_0
+character(len=:), allocatable :: expr_1_1
+character(len=:), allocatable :: expr_1_2
+character(len=:), allocatable :: expr_1_3
+character(len=:), allocatable :: expr_1_4
+character(len=:), allocatable :: expr_1_5
+character(len=:), allocatable :: expr_2_0
+character(len=:), allocatable :: expr_2_1
+character(len=:), allocatable :: expr_2_2
+character(len=:), allocatable :: expr_2_3
+character(len=:), allocatable :: expr_2_4
+character(len=:), allocatable :: expr_2_5
+        character(len=:), allocatable :: res
+        
+
+                        integer :: i
+savePoint = cursor
+
+        do i = 0, 2
+            select case(i)
+            
+            case(0)
+                cursor = savePoint
+                
+                
+                lexemeStart = cursor
+                if (.not. (acceptRange('0', '9'))) cycle
+
+                do while (.not. cursor > len(input))
+                    if (.not. (acceptRange('0', '9'))) exit
+                end do
+
+                expr_0_0 = consumeInput()
+                
+                
+            res = toStr(expr_0_0);
+        
+
+                exit
+            
+
+            case(1)
+                cursor = savePoint
+                
+                
+                lexemeStart = cursor
+                if (.not. (acceptRange('a', 'z'))) cycle
+
+                do while (.not. cursor > len(input))
+                    if (.not. (acceptRange('a', 'z'))) exit
+                end do
+
+                expr_1_0 = consumeInput()
+                
+                
+            res = toStr(expr_1_0);
+        
+
+                exit
+            
+            case default
+                call pegError()
+            end select
+        end do
+ 
+    end function peg_0_fd5
     
 
     ! Funciones auxiliares
@@ -190,5 +388,92 @@ module parser
         end do
     end function tolower
 
+    function matchExactRepetition(int, str) result(accept)
+        integer, intent(in) :: int
+        character(len=*) :: str
+        logical :: accept
+        integer :: i
+
+        accept = .true.
+
+        do i = 1, int
+            if (.not. acceptString(str)) then
+                accept = .false.
+                return
+            end if
+        end do
+    end function matchExactRepetition
+
+    function matchVariableRepetition(minReps, maxReps, str) result(accept)
+        integer, intent(in) :: minReps, maxReps
+        character(len=*), intent(in) :: str
+        logical :: accept
+        integer :: i, count
+
+        count  = 0
+        accept = .false.
+
+        do i = 1, maxReps
+            if (.not. acceptString(str)) then
+                exit
+            end if
+            count = count + 1
+        end do
+
+        if (count >= minReps) then
+            accept = .true.
+        end if
+
+    end function matchVariableRepetition
+
+    function matchExactRepetitionWithSeparator(count, str, sep) result(accept)
+        integer, intent(in) :: count
+        character(len=*), intent(in) :: str
+        character(len=*), intent(in) :: sep
+        logical :: accept
+        integer :: i
+
+        accept = .true.
+
+        do i = 1, count
+            if (.not. acceptString(str)) then
+                accept = .false.
+                return
+            end if
+            if (i < count) then
+                if (.not. acceptString(sep)) then
+                    accept = .false.
+                    return
+                end if
+            end if
+        end do
+    end function matchExactRepetitionWithSeparator
+
+    function matchVariableRepetitionWithSeparator(minReps, maxReps, str, sep) result(accept)
+        integer, intent(in) :: minReps, maxReps
+        character(len=*), intent(in) :: str, sep
+        logical :: accept
+        integer :: i, count
+
+        count  = 0
+        accept = .false.
+
+        do i = 1, maxReps
+            if (.not. acceptString(str)) then
+                exit
+            end if
+            count = count + 1
+            if (i < maxReps) then
+                if (.not. acceptString(sep)) then
+                    exit
+                end if
+            end if
+        end do
+
+        if (count >= minReps) then
+            accept = .true.
+        end if
+
+    end function matchVariableRepetitionWithSeparator
 
 end module parser

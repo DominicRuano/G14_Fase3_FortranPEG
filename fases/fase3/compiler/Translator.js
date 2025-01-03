@@ -1,11 +1,13 @@
 import * as CST from '../parser/visitor/CST.js';
 import * as Template from './Templates.js';
-import { getActionId, getReturnType, getExprId, getRuleId } from './utils.js';
+import { getActionId, getReturnType, getExprId, getRuleId, ids } from './utils.js';
+
+export let startingRuleEnabled = true;
 
 /** @typedef {import('../visitor/Visitor.js').default<string>} Visitor */
 /** @typedef {import('../visitor/Visitor.js').ActionTypes} ActionTypes*/
 
-/**
+/** v
  * @implements {Visitor}
  */
 export default class FortranTranslator {
@@ -21,20 +23,21 @@ export default class FortranTranslator {
     currentChoice;
     /** @type {number} */
     currentExpr;
-
+    
     /**
      *
      * @param {ActionTypes} returnTypes
-     */
-    constructor(returnTypes) {
-        this.actionReturnTypes = returnTypes;
-        this.actions = [];
+    */
+   constructor(returnTypes) {
+       this.actionReturnTypes = returnTypes;
+       this.actions = [];
+       this.Lista1 = [];
         this.translatingStart = false;
         this.currentRule = '';
         this.currentChoice = 0;
         this.currentExpr = 0;
     }
-
+    
     /**
      * @param {CST.Grammar} node
      * @this {Visitor}
@@ -67,33 +70,39 @@ export default class FortranTranslator {
 
         if (node.start) this.translatingStart = true;
 
-        const ruleTranslation = Template.rule({
-            id: node.id,
-            returnType: getReturnType(
-                getActionId(node.id, this.currentChoice),
-                this.actionReturnTypes
-            ),
-            exprDeclarations: node.expr.exprs.flatMap((election, i) =>
-                election.exprs
-                    .filter((expr) => expr instanceof CST.Pluck)
-                    .map((label, j) => {
-                        const expr = label.labeledExpr.annotatedExpr.expr;
-                        return `${
-                            expr instanceof CST.Identificador
-                                ? getReturnType(
-                                        getActionId(expr.id, i),
-                                        this.actionReturnTypes
-                                    )
-                                : 'character(len=:), allocatable'
+        if (node instanceof CST.Agrupacion){    
+            return this.visitOpciones(node);
+        }else{
+            const ruleTranslation = Template.rule({
+                id: node.id,
+                returnType: getReturnType(
+                    getActionId(node.id, this.currentChoice),
+                    this.actionReturnTypes
+                ),
+                exprDeclarations: node.expr.exprs.flatMap((election, i) =>
+                    election.exprs
+                .filter((expr) => expr instanceof CST.Pluck)
+                .map((label, j) => {
+                    const expr = label.labeledExpr.annotatedExpr.expr;
+                    let valReturn =  `${
+                        expr instanceof CST.Identificador
+                        ? getReturnType(
+                            getActionId(expr.id, i),
+                            this.actionReturnTypes
+                        )
+                        : 'character(len=:), allocatable'
                         } :: expr_${i}_${j}`;
+                    this.Lista1.push(`expr_${i}_${j}`);
+                    return valReturn;
                     })
-            ),
-            expr: node.expr.accept(this),
-        });
-
-        this.translatingStart = false;
-
-        return ruleTranslation;
+                ),
+                expr: node.expr.accept(this),
+            });
+    
+            this.translatingStart = false;
+    
+            return ruleTranslation;
+        }
     }
 
     /**
@@ -118,6 +127,68 @@ export default class FortranTranslator {
      */
     visitUnion(node) {
         console.log("here on visitUnion");
+        console.log(node);
+        if (node.exprs?.length > 0 && 
+            node.exprs
+                ?.map((expr) => expr.labeledExpr.annotatedExpr.expr instanceof CST.Agrupacion)
+                .reduce((a, b) => a || b, false)){
+            let temporal = node.exprs?.map((expr, j) => {
+                if (expr.labeledExpr.annotatedExpr.expr instanceof CST.Agrupacion){
+                    let id = ids();
+                    var currentChoiceTemp = this.currentChoice;
+                    startingRuleEnabled = false;
+                    let code = expr.labeledExpr.annotatedExpr.expr.accept(this);
+                    startingRuleEnabled = true;
+                    this.currentChoice = currentChoiceTemp;
+                    console.log(code);
+                    this.actions.push(Template.action({
+                        ruleId: this.currentChoice,
+                        choice: id,
+                        signature: [],
+                        returnType: getReturnType(
+                            getActionId(node.id, this.currentChoice),
+                            this.actionReturnTypes
+                        ),
+                        paramDeclarations: [
+                        "character(len=:), allocatable :: expr_0_0",
+                        "character(len=:), allocatable :: expr_0_1",
+                        "character(len=:), allocatable :: expr_0_2",
+                        "character(len=:), allocatable :: expr_0_3",
+                        "character(len=:), allocatable :: expr_0_4",
+                        "character(len=:), allocatable :: expr_0_5",
+                        "character(len=:), allocatable :: expr_1_0",
+                        "character(len=:), allocatable :: expr_1_1",
+                        "character(len=:), allocatable :: expr_1_2",
+                        "character(len=:), allocatable :: expr_1_3",
+                        "character(len=:), allocatable :: expr_1_4",
+                        "character(len=:), allocatable :: expr_1_5",
+                        "character(len=:), allocatable :: expr_2_0",
+                        "character(len=:), allocatable :: expr_2_1",
+                        "character(len=:), allocatable :: expr_2_2",
+                        "character(len=:), allocatable :: expr_2_3",
+                        "character(len=:), allocatable :: expr_2_4",
+                        "character(len=:), allocatable :: expr_2_5"], // acciones desesperadas, no se me ocurrió otra forma de hacerlo
+                        code: `\n
+                        integer :: i\nsavePoint = cursor\n${code} `,
+                    }));
+                    return `
+                expr_${this.currentChoice}_${j} = peg_${this.currentChoice}_f${id}()`;
+                } else {
+                    var currentExprTemp = this.currentExpr;
+                    this.currentExpr = j;
+                    var returnVal =  expr.accept(this);
+                    this.currentExpr = currentExprTemp;
+
+                    return returnVal;
+                }
+            });
+            if (temporal) {
+                var cosa = this.Lista1.join('//');
+                this.Lista1 = [];
+                return [temporal.join('\n'), `\t\t\tres = ${cosa}`].join('\n');
+            }
+                
+        }
         const matchExprs = node.exprs.filter(
             (expr) => expr instanceof CST.Pluck
         );
@@ -311,7 +382,7 @@ export default class FortranTranslator {
     visitIdentificador(node) {
         console.log("here on visitIdentificador");
         return getRuleId(node.id) + '()';
-    }
+    }       
 
     /**
      * @param {CST.Punto} node

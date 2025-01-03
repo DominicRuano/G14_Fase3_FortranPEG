@@ -63,3 +63,20 @@ export function getExprId(choice, index) {
 export function getRuleId(rule) {
     return `peg_${rule}`;
 }
+
+let letters = "abcdefghijklmnopqrstuvwxyz".split("");
+let numbers = "0123456789".split("");
+
+let letterIndex = 0;
+let numberIndex = 0;
+
+export function ids() {
+    var id = `${letters[letterIndex]}${numbers[numberIndex]}`;
+    if (numberIndex === numbers.length - 1) {
+        numberIndex = 0;
+        letterIndex++;
+    } else {
+        numberIndex++;
+    }
+    return id;
+}

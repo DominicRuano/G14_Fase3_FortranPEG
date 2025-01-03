@@ -1,3 +1,5 @@
+import { startingRuleEnabled } from "./Translator.js";
+
 /**
  *
  * @param {{
@@ -313,7 +315,7 @@ export const election = (data) => `
 */
 export const union = (data) => `
                 ${data.exprs.join('\n')}
-                ${data.startingRule ? 'if (.not. acceptEOF()) cycle' : ''}
+                ${data.startingRule && startingRuleEnabled ? 'if (.not. acceptEOF()) cycle' : ''}
                 ${data.resultExpr}
 `;
 
