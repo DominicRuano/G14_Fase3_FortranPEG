@@ -269,7 +269,7 @@ export default class FortranTranslator {
      */
     visitString(node) {
         console.log("here on visitString");
-        return `acceptString('${node.val}')`;
+        return node.isCase? `acceptStringCaseInsensitive('${node.val}')` : `acceptString('${node.val}')`;
     }
 
     /**

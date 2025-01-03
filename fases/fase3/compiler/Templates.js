@@ -136,6 +136,35 @@ module parser
 
         cast = str
     end function strToStr
+
+    function acceptStringCaseInsensitive(str) result(accept)
+        character(len=*) :: str
+        logical :: accept
+        integer :: offset
+
+        offset = len(str) - 1
+        if (tolower(str) /= tolower(input(cursor:cursor + offset))) then
+            accept = .false.
+            return
+        end if
+        cursor = cursor + len(str)
+        accept = .true.
+    end function acceptStringCaseInsensitive
+
+    function tolower(str) result(lower_str)
+        character(len=*), intent(in) :: str
+        character(len=len(str)) :: lower_str
+        integer :: i
+
+        lower_str = str 
+        do i = 1, len(str)
+            if (iachar(str(i:i)) >= iachar('A') .and. iachar(str(i:i)) <= iachar('Z')) then
+                lower_str(i:i) = achar(iachar(str(i:i)) + 32)
+            end if
+        end do
+    end function tolower
+
+
 end module parser
 `;
 
