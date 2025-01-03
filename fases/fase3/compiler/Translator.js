@@ -130,7 +130,7 @@ export default class FortranTranslator {
         console.log(node);
         if (node.exprs?.length > 0 && 
             node.exprs
-                ?.map((expr) => expr.labeledExpr.annotatedExpr.expr instanceof CST.Agrupacion)
+                ?.map((expr) => expr.labeledExpr?.annotatedExpr?.expr instanceof CST.Agrupacion)
                 .reduce((a, b) => a || b, false)){
             let temporal = node.exprs?.map((expr, j) => {
                 if (expr.labeledExpr.annotatedExpr.expr instanceof CST.Agrupacion){
@@ -262,6 +262,15 @@ export default class FortranTranslator {
                     expr: node.expr.accept(this),
                     destination: getExprId(this.currentChoice, this.currentExpr),
                 });
+            } else if (node.expr && typeof node.expr.accept === 'function') {
+                // La función accept existe y es ejecutable
+                console.log("node en error: ", node, typeof node.expr.accept);
+                node.expr.chars = node.expr.chars.map((char) => `"${char}"`);
+                return Template.strExpr({
+                    quantifier: node.qty,
+                    expr: [`acceptSet([${node.expr.chars.join(',')}])`],
+                    destination: getExprId(this.currentChoice, this.currentExpr),
+                });
             }
             return Template.strExpr({
                 quantifier: node.qty,
@@ -328,7 +337,7 @@ export default class FortranTranslator {
         return `
             copyCursor = cursor
             if (.not. acceptString('${node.assertion.val}')) cycle
-            cursor = copyCursor`;
+            !cursor = copyCursor`;
     }
 
     /**
