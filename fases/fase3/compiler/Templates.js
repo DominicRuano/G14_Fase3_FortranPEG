@@ -373,7 +373,7 @@ export const strExpr = (data) => {
             return `
                 lexemeStart = cursor
                 if (.not. matchExactRepetition(${data.count}, ${data.expr})) then
-                    call pegError()
+                    !call pegError()
                     cycle
                 end if
                 ${data.destination} = consumeInput()
@@ -382,7 +382,7 @@ export const strExpr = (data) => {
             return `
                 lexemeStart = cursor
                 if (.not. matchVariableRepetition(${data.min}, ${data.max}, ${data.expr})) then
-                    call pegError()
+                    !call pegError()
                     cycle
                 end if
                 ${data.destination} = consumeInput()
@@ -391,7 +391,7 @@ export const strExpr = (data) => {
             return `
                 lexemeStart = cursor
                 if (.not. matchExactRepetitionWithSeparator(${data.count}, ${data.expr}, '${data.delimiter}')) then
-                    call pegError()
+                    !call pegError()
                     cycle
                 end if
                 ${data.destination} = consumeInput()
@@ -400,7 +400,7 @@ export const strExpr = (data) => {
             return `
                 lexemeStart = cursor
                 if (.not. matchVariableRepetitionWithSeparator(${data.min}, ${data.max}, ${data.expr}, '${data.delimiter}')) then
-                    call pegError()
+                    !call pegError()
                     cycle
                 end if
                 ${data.destination} = consumeInput()

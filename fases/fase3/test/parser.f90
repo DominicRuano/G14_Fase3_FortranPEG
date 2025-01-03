@@ -12,12 +12,6 @@ module parser
     end interface
 
     
-    type :: operation
-        character(len=:), allocatable :: operator
-        integer :: operand
-    end type
-
-   
 
     contains
 
@@ -25,39 +19,119 @@ module parser
 
     function parse(str) result(res)
         character(len=:), allocatable :: str
-        integer :: res
+        character(len=:), allocatable :: res
 
         input = str
         cursor = 1
 
-        res = peg_Expression()
+        res = peg_pruebas()
     end function parse
 
     ! Inicio de las reglas
     
-    function peg_Expression() result (res)
-        integer :: res
-        integer :: expr_0_0
-type(operation) :: expr_0_1
+    function peg_pruebas() result (res)
+        character(len=:), allocatable :: res
+        character(len=:), allocatable :: expr_0_0
+character(len=:), allocatable :: expr_0_1
+character(len=:), allocatable :: expr_1_0
+character(len=:), allocatable :: expr_1_1
+character(len=:), allocatable :: expr_2_0
+character(len=:), allocatable :: expr_2_1
+character(len=:), allocatable :: expr_3_0
+character(len=:), allocatable :: expr_3_1
+character(len=:), allocatable :: expr_4_0
+character(len=:), allocatable :: expr_4_1
+character(len=:), allocatable :: expr_4_2
+character(len=:), allocatable :: expr_5_0
+character(len=:), allocatable :: expr_6_0
+character(len=:), allocatable :: expr_7_0
+character(len=:), allocatable :: expr_8_0
         integer :: i
 
         savePoint = cursor
         
-        do i = 0, 1
+        do i = 0, 9
             select case(i)
             
             case(0)
                 cursor = savePoint
                 
-                expr_0_0 = peg_Term()
+                
+                lexemeStart = cursor
+                if(.not. acceptString('a')) cycle
+                expr_0_0 = consumeInput()
+
+            copyCursor = cursor
+            if ( acceptString('-')) then
+                cursor = copyCursor
+                cycle
+            end if
+            cursor = copyCursor
+expr_0_1 = peg_num()
+                if (.not. acceptEOF()) cycle
+                
+            res = toStr(expr_0_0)//toStr(expr_0_1);
+        
+
+                exit
+            
+
+            case(1)
+                cursor = savePoint
+                
+                
+                lexemeStart = cursor
+                if(.not. acceptString('b')) cycle
+                expr_1_0 = consumeInput()
+
+            copyCursor = cursor
+            if (.not. acceptString('-')) cycle
+            !cursor = copyCursor
+expr_1_1 = peg_num()
+                if (.not. acceptEOF()) cycle
+                
+            res = toStr(expr_1_0)//toStr(expr_1_1);
+        
+
+                exit
+            
+
+            case(2)
+                cursor = savePoint
+                
+                
+                lexemeStart = cursor
+                if(.not. acceptString('c')) cycle
+                expr_2_0 = consumeInput()
+
+                lexemeStart = cursor
+                if(.not. acceptPeriod()) cycle
+                expr_2_1 = consumeInput()
+                if (.not. acceptEOF()) cycle
+                
+            res = toStr(expr_2_0)//toStr(expr_2_1);
+        
+
+                exit
+            
+
+            case(3)
+                cursor = savePoint
+                
+                
+                lexemeStart = cursor
+                if(.not. acceptString('d')) cycle
+                expr_3_0 = consumeInput()
 
                 lexemeStart = cursor
 
-                expr_0_1 = ""
+                expr_3_1 = peg_num()
+                if (lexemeStart == cursor) cycle
+
                 isTerminal = .false.
                 do while (.not. cursor > len(input))
                     copyCursor = cursor
-                    expr_0_1 = expr_0_1 // peg_ExpressionTail()
+                    expr_3_1 = expr_3_1 // peg_num()
                     if ( savePoint == cursor) then ! no se consumio nada en 0 o muchos
                         ! Si llego aqui ocurrio un falso positivo en los errores
                         ! por eso solo continua y los activa al salir del loop
@@ -73,127 +147,103 @@ type(operation) :: expr_0_1
                 isTerminal = .true.
                 if (.not. acceptEOF()) cycle
                 
-                res = peg_Expression_f0(expr_0_0, expr_0_1)
-
+            res = toStr(expr_3_0)//toStr(expr_3_1);
+        
 
                 exit
             
-            case default
-                call pegError()
-            end select
-        end do
 
-    end function peg_Expression
-
-    ! Inicio de la gramatica
-
-
-    function peg_ExpressionTail() result (res)
-        type(operation) :: res
-        character(len=:), allocatable :: expr_0_0
-character(len=:), allocatable :: expr_0_1
-character(len=:), allocatable :: expr_0_2
-integer :: expr_0_3
-        integer :: i
-
-        savePoint = cursor
-        
-        do i = 0, 1
-            select case(i)
-            
-            case(0)
-                cursor = savePoint
-                expr_0_0 = peg__()
-
-                expr_0_1 = peg_0_fa0()
-expr_0_2 = peg__()
-expr_0_3 = peg_Term()
-			res = expr_0_0//expr_0_1//expr_0_0//expr_0_1//expr_0_2//expr_0_3
-                exit
-            
-            case default
-                call pegError()
-            end select
-        end do
-
-    end function peg_ExpressionTail
-
-    ! Inicio de la gramatica
-
-
-    function peg_Term() result (res)
-        integer :: res
-        character(len=:), allocatable :: expr_0_0
-character(len=:), allocatable :: expr_0_1
-        integer :: i
-
-        savePoint = cursor
-        
-        do i = 0, 1
-            select case(i)
-            
-            case(0)
-                cursor = savePoint
-                expr_0_0 = peg_Factor()
-
-                expr_0_1 = peg_0_fa1()
-			res = 
-                exit
-            
-            case default
-                call pegError()
-            end select
-        end do
-
-    end function peg_Term
-
-    ! Inicio de la gramatica
-
-
-    function peg_Factor() result (res)
-        character(len=:), allocatable :: res
-        character(len=:), allocatable :: expr_0_0
-character(len=:), allocatable :: expr_0_1
-integer :: expr_0_2
-character(len=:), allocatable :: expr_0_3
-character(len=:), allocatable :: expr_0_4
-character(len=:), allocatable :: expr_1_0
-        integer :: i
-
-        savePoint = cursor
-        
-        do i = 0, 2
-            select case(i)
-            
-            case(0)
+            case(4)
                 cursor = savePoint
                 
                 
                 lexemeStart = cursor
-                if(.not. acceptString('(')) cycle
-                expr_0_0 = consumeInput()
-expr_0_1 = peg__()
-expr_0_2 = peg_Expression()
-expr_0_3 = peg__()
+                if(.not. acceptString('e')) cycle
+                expr_4_0 = consumeInput()
 
                 lexemeStart = cursor
-                if(.not. acceptString(')')) cycle
-                expr_0_4 = consumeInput()
+                if(.not. (acceptSet([char(32)]))) cycle
+                expr_4_1 = consumeInput()
+expr_4_2 = peg_num()
+                if (.not. acceptEOF()) cycle
                 
-                
-            res = toStr(expr_0_2);
+            res = toStr(expr_4_0)//toStr(expr_4_2);
         
 
                 exit
             
 
-            case(1)
+            case(5)
                 cursor = savePoint
                 
-                expr_1_0 = peg_Integer()
+                
+                lexemeStart = cursor
+                if (.not. matchExactRepetition(3, "f")) then
+                    !call pegError()
+                    cycle
+                end if
+                expr_5_0 = consumeInput()
+            
+                if (.not. acceptEOF()) cycle
+                
+            res = toStr(expr_5_0);
+        
+
+                exit
+            
+
+            case(6)
+                cursor = savePoint
                 
                 
-            res = toStr(expr_1_0);
+                lexemeStart = cursor
+                if (.not. matchExactRepetitionWithSeparator(3, "g", ', ')) then
+                    !call pegError()
+                    cycle
+                end if
+                expr_6_0 = consumeInput()
+            
+                if (.not. acceptEOF()) cycle
+                
+            res = toStr(expr_6_0);
+        
+
+                exit
+            
+
+            case(7)
+                cursor = savePoint
+                
+                
+                lexemeStart = cursor
+                if (.not. matchVariableRepetition(1, 3, "h")) then
+                    !call pegError()
+                    cycle
+                end if
+                expr_7_0 = consumeInput()
+            
+                if (.not. acceptEOF()) cycle
+                
+            res = toStr(expr_7_0);
+        
+
+                exit
+            
+
+            case(8)
+                cursor = savePoint
+                
+                
+                lexemeStart = cursor
+                if (.not. matchVariableRepetitionWithSeparator(1, 3, "i", ', ')) then
+                    !call pegError()
+                    cycle
+                end if
+                expr_8_0 = consumeInput()
+            
+                if (.not. acceptEOF()) cycle
+                
+            res = toStr(expr_8_0);
         
 
                 exit
@@ -203,53 +253,12 @@ expr_0_3 = peg__()
             end select
         end do
 
-    end function peg_Factor
+    end function peg_pruebas
 
     ! Inicio de la gramatica
 
 
-    function peg_Integer() result (res)
-        integer :: res
-        character(len=:), allocatable :: expr_0_0
-character(len=:), allocatable :: expr_0_1
-        integer :: i
-
-        savePoint = cursor
-        
-        do i = 0, 1
-            select case(i)
-            
-            case(0)
-                cursor = savePoint
-                
-                expr_0_0 = peg__()
-
-                lexemeStart = cursor
-                if (.not. acceptSet(["[object Object]"])) cycle
-
-                do while (.not. cursor > len(input))
-                    if (.not. acceptSet(["[object Object]"])) exit
-                end do
-
-                expr_0_1 = consumeInput()
-                
-                
-                res = peg_Integer_f0(expr_0_1)
-
-
-                exit
-            
-            case default
-                call pegError()
-            end select
-        end do
-
-    end function peg_Integer
-
-    ! Inicio de la gramatica
-
-
-    function peg__() result (res)
+    function peg_num() result (res)
         character(len=:), allocatable :: res
         character(len=:), allocatable :: expr_0_0
         integer :: i
@@ -264,11 +273,7 @@ character(len=:), allocatable :: expr_0_1
                 
                 
                 lexemeStart = cursor
-
-                do while (.not. cursor > len(input))
-                    if (.not. acceptSet([" ","\t","\n","\r"])) exit
-                end do
-
+                if(.not. (acceptRange('0', '9'))) cycle
                 expr_0_0 = consumeInput()
                 
                 
@@ -282,221 +287,12 @@ character(len=:), allocatable :: expr_0_1
             end select
         end do
 
-    end function peg__
+    end function peg_num
 
     ! Inicio de la gramatica
 
 
     ! Inicio de las acciones
-    
-    function peg_Expression_f0(head, tail) result(res)
-        integer :: head
-type(operation) :: tail
-        integer :: res
-        
-        integer :: i
-
-        if (size(tail) < 0) then
-            res = head
-            return
-        end if
-
-        do i = 1, size(tail)
-            if (tail(i)%operator == '+') then
-                head = head + tail(i)%operand
-            else
-                head = head - tail(i)%operand
-            end if
-        end do
-
-        res = head
-    
-    end function peg_Expression_f0
-    
-
-    function peg_0_fa0() result(res)
-        character(len=:), allocatable :: expr_0_0
-character(len=:), allocatable :: expr_0_1
-character(len=:), allocatable :: expr_0_2
-character(len=:), allocatable :: expr_0_3
-character(len=:), allocatable :: expr_0_4
-character(len=:), allocatable :: expr_0_5
-character(len=:), allocatable :: expr_1_0
-character(len=:), allocatable :: expr_1_1
-character(len=:), allocatable :: expr_1_2
-character(len=:), allocatable :: expr_1_3
-character(len=:), allocatable :: expr_1_4
-character(len=:), allocatable :: expr_1_5
-character(len=:), allocatable :: expr_2_0
-character(len=:), allocatable :: expr_2_1
-character(len=:), allocatable :: expr_2_2
-character(len=:), allocatable :: expr_2_3
-character(len=:), allocatable :: expr_2_4
-character(len=:), allocatable :: expr_2_5
-        character(len=:), allocatable :: res
-        
-
-                        integer :: i
-savePoint = cursor
-
-        do i = 0, 2
-            select case(i)
-            
-            case(0)
-                cursor = savePoint
-                
-                
-                lexemeStart = cursor
-                if(.not. acceptString('+')) cycle
-                expr_0_0 = consumeInput()
-                
-                
-            res = toStr(expr_0_0);
-        
-
-                exit
-            
-
-            case(1)
-                cursor = savePoint
-                
-                
-                lexemeStart = cursor
-                if(.not. acceptString('-')) cycle
-                expr_1_0 = consumeInput()
-                
-                
-            res = toStr(expr_1_0);
-        
-
-                exit
-            
-            case default
-                call pegError()
-            end select
-        end do
- 
-    end function peg_0_fa0
-    
-
-    function peg_0_fa2() result(res)
-        character(len=:), allocatable :: expr_0_0
-character(len=:), allocatable :: expr_0_1
-character(len=:), allocatable :: expr_0_2
-character(len=:), allocatable :: expr_0_3
-character(len=:), allocatable :: expr_0_4
-character(len=:), allocatable :: expr_0_5
-character(len=:), allocatable :: expr_1_0
-character(len=:), allocatable :: expr_1_1
-character(len=:), allocatable :: expr_1_2
-character(len=:), allocatable :: expr_1_3
-character(len=:), allocatable :: expr_1_4
-character(len=:), allocatable :: expr_1_5
-character(len=:), allocatable :: expr_2_0
-character(len=:), allocatable :: expr_2_1
-character(len=:), allocatable :: expr_2_2
-character(len=:), allocatable :: expr_2_3
-character(len=:), allocatable :: expr_2_4
-character(len=:), allocatable :: expr_2_5
-        character(len=:), allocatable :: res
-        
-
-                        integer :: i
-savePoint = cursor
-
-        do i = 0, 2
-            select case(i)
-            
-            case(0)
-                cursor = savePoint
-                
-                
-                lexemeStart = cursor
-                if(.not. acceptString('*')) cycle
-                expr_0_0 = consumeInput()
-                
-                
-            res = toStr(expr_0_0);
-        
-
-                exit
-            
-
-            case(1)
-                cursor = savePoint
-                
-                
-                lexemeStart = cursor
-                if(.not. acceptString('/')) cycle
-                expr_1_0 = consumeInput()
-                
-                
-            res = toStr(expr_1_0);
-        
-
-                exit
-            
-            case default
-                call pegError()
-            end select
-        end do
- 
-    end function peg_0_fa2
-    
-
-    function peg_0_fa1() result(res)
-        character(len=:), allocatable :: expr_0_0
-character(len=:), allocatable :: expr_0_1
-character(len=:), allocatable :: expr_0_2
-character(len=:), allocatable :: expr_0_3
-character(len=:), allocatable :: expr_0_4
-character(len=:), allocatable :: expr_0_5
-character(len=:), allocatable :: expr_1_0
-character(len=:), allocatable :: expr_1_1
-character(len=:), allocatable :: expr_1_2
-character(len=:), allocatable :: expr_1_3
-character(len=:), allocatable :: expr_1_4
-character(len=:), allocatable :: expr_1_5
-character(len=:), allocatable :: expr_2_0
-character(len=:), allocatable :: expr_2_1
-character(len=:), allocatable :: expr_2_2
-character(len=:), allocatable :: expr_2_3
-character(len=:), allocatable :: expr_2_4
-character(len=:), allocatable :: expr_2_5
-        character(len=:), allocatable :: res
-        
-
-                        integer :: i
-savePoint = cursor
-
-        do i = 0, 1
-            select case(i)
-            
-            case(0)
-                cursor = savePoint
-                
-                expr_0_0 = peg_0_fa2()
-expr_0_1 = peg__()
-expr_0_2 = peg_Factor()
-			res = expr_0_0//expr_0_1
-                exit
-            
-            case default
-                call pegError()
-            end select
-        end do
- 
-    end function peg_0_fa1
-    
-
-    function peg_Integer_f0(num) result(res)
-        character(len=:), allocatable :: num
-        integer :: res
-        
-
-        read(num, *) res
-    
-    end function peg_Integer_f0
     
 
     ! Funciones auxiliares

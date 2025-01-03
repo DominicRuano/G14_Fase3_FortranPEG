@@ -279,6 +279,7 @@ export default class FortranTranslator {
             });
         } else if (node.qty) {
             // TODO: Implement repetitions (e.g., |3|, |1..3|, etc...)
+            console.log("node en error: ", node);
             node.expr.isValue = true
             switch (node.qty.caso) {
                 case "caso1":
@@ -302,7 +303,7 @@ export default class FortranTranslator {
                         expr: node.expr.accept(this),
                         destination: getExprId(this.currentChoice, this.currentExpr),
                         count: node.qty.min,
-                        delimiter: node.qty.intermedio
+                        delimiter: node.qty.intermedio.exprs[0].exprs[0].labeledExpr.annotatedExpr.expr.val
                 });
                 case "caso4":
                     return Template.strExpr({
@@ -311,7 +312,7 @@ export default class FortranTranslator {
                         destination: getExprId(this.currentChoice, this.currentExpr),
                         min: node.qty.min,
                         max: node.qty.max,
-                        delimiter: node.qty.intermedio
+                        delimiter: node.qty.intermedio.exprs[0].exprs[0].labeledExpr.annotatedExpr.expr.val
                 });
             }
         } else {
