@@ -289,10 +289,12 @@ export class String {
      *
      * @param {string} val
 	 * @param {boolean=} isCase
+     * @param {boolean=} isValue
      */
-    constructor(val, isCase) {
+    constructor(val, isCase,isValue) {
         this.val = val;
 		this.isCase = isCase;
+        this.isValue = isValue
     }
 
     /**

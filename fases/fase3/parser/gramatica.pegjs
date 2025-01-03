@@ -93,7 +93,7 @@ match
     return new n.Identificador(id);
   }
   / val:$literales isCase:"i"? {
-    return new n.String(val.replace(/['"]/g, ''), isCase ? true : false);
+    return new n.String(val.replace(/['"]/g, ''), isCase ? true : false,false);
   }
   / "(" _ nodo:opciones _ ")" {
     return new n.Agrupacion(nodo.exprs);
@@ -106,16 +106,17 @@ match
   }
 
 conteo
-  = "|" _ valor1:(numero / id:identificador) _ "|" {
+  = "|" _ valor1:(numero / id:identificador) _ "|" { // expression |count|
     return {min: valor1, caso: "caso1"};
   }
-  / "|" _ valor1:(numero / id:identificador)? _ ".." _ valor2:(numero / id2:identificador)? _ "|" {
+  / "|" _ valor1:(numero / id:identificador)? _ ".." _ valor2:(numero / id2:identificador)? _ "|" { // expression |min..max|
     return {min: valor1, max: valor2, caso: "caso2"};
   }
-  / "|" _ valor1:(numero / id:identificador)? _ "," _ intermedio:opciones _ "|" {
+  / "|" _ valor1:(numero / id:identificador)? _ "," _ intermedio:opciones _ "|" { // expression |count, delimiter|
     return {min: valor1, intermedio: intermedio, caso: "caso3"};
   }
-  / "|" _ valor1:(numero / id:identificador)? _ ".." _ valor2:(numero / id2:identificador)? _ "," _ intermedio:opciones _ "|" {
+  / "|" _ valor1:(numero / id:identificador)? _ ".." _ valor2:(numero / id2:identificador)? _ "," _ intermedio:opciones _ "|"  // expression |min..max, delimiter|
+  {
     return {min: valor1, max: valor2, intermedio: intermedio, caso: "caso4"};
   }
 

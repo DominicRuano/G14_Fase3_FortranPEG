@@ -341,7 +341,7 @@ function peg$parse(input, options) {
     return new n.Identificador(id);
   };
   var peg$f12 = function(val, isCase) {
-    return new n.String(val.replace(/['"]/g, ''), isCase ? true : false);
+    return new n.String(val.replace(/['"]/g, ''), isCase ? true : false,false);
   };
   var peg$f13 = function(nodo) {
     return new n.Agrupacion(nodo.exprs);
@@ -352,13 +352,13 @@ function peg$parse(input, options) {
   var peg$f15 = function() {
     return new n.Punto();
   };
-  var peg$f16 = function(valor1) {
+  var peg$f16 = function(valor1) { // expression |count|
     return {min: valor1, caso: "caso1"};
   };
-  var peg$f17 = function(valor1, valor2) {
+  var peg$f17 = function(valor1, valor2) { // expression |min..max|
     return {min: valor1, max: valor2, caso: "caso2"};
   };
-  var peg$f18 = function(valor1, intermedio) {
+  var peg$f18 = function(valor1, intermedio) { // expression |count, delimiter|
     return {min: valor1, intermedio: intermedio, caso: "caso3"};
   };
   var peg$f19 = function(valor1, valor2, intermedio) {
