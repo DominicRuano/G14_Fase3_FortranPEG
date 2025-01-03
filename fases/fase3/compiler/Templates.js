@@ -202,6 +202,56 @@ module parser
 
     end function matchVariableRepetition
 
+    function matchExactRepetitionWithSeparator(count, str, sep) result(accept)
+        integer, intent(in) :: count
+        character(len=*), intent(in) :: str
+        character(len=*), intent(in) :: sep
+        logical :: accept
+        integer :: i
+
+        accept = .true.
+
+        do i = 1, count
+            if (.not. acceptString(str)) then
+                accept = .false.
+                return
+            end if
+            if (i < count) then
+                if (.not. acceptString(sep)) then
+                    accept = .false.
+                    return
+                end if
+            end if
+        end do
+    end function matchExactRepetitionWithSeparator
+
+    function matchVariableRepetitionWithSeparator(minReps, maxReps, str, sep) result(accept)
+        integer, intent(in) :: minReps, maxReps
+        character(len=*), intent(in) :: str, sep
+        logical :: accept
+        integer :: i, count
+
+        count  = 0
+        accept = .false.
+
+        do i = 1, maxReps
+            if (.not. acceptString(str)) then
+                exit
+            end if
+            count = count + 1
+            if (i < maxReps) then
+                if (.not. acceptString(sep)) then
+                    exit
+                end if
+            end if
+        end do
+
+        if (count >= minReps) then
+            accept = .true.
+        end if
+
+    end function matchVariableRepetitionWithSeparator
+
 end module parser
 `;
 
