@@ -164,6 +164,25 @@ export class Pluck {
 }
     
 
+export class Agrupacion {
+    /**
+     *
+     * @param {Union[]} exprs
+     */
+    constructor(exprs) {
+        this.exprs = exprs;
+    }
+
+    /**
+     * @template T
+     * @param {Visitor<T>} visitor
+     * @returns {T}
+     */
+    accept(visitor) {
+        return visitor.visitRegla(this);
+    }
+}
+
 /**
  * @implements {Node}
  */

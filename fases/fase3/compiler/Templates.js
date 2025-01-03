@@ -240,7 +240,6 @@ export const union = (data) => `
 * @returns
 */
 export const strExpr = (data) => {
-    console.log("data en strExpr: ",data);
     if (!data.quantifier) {
         return `
                 lexemeStart = cursor
@@ -290,7 +289,6 @@ export const strExpr = (data) => {
     * @returns
     */
 export const idExpr = (data) => {
-    console.log("data en strExpr: ",data);
     if (!data.quantifier) {
         return `
                 lexemeStart = cursor
@@ -362,6 +360,11 @@ export const idExpr = (data) => {
                     exit
                 end if
                 isTerminal = .true.`;
+        case '~':
+            return `
+                integer :: i
+
+                ${data.expr}`;
         default:
             throw new Error(
                 `'${data.quantifier}' quantifier needs implementation`
