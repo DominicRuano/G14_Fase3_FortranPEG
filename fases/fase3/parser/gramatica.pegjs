@@ -106,10 +106,18 @@ match
   }
 
 conteo
-  = "|" _ (numero / id:identificador) _ "|"
-  / "|" _ (numero / id:identificador)? _ ".." _ (numero / id2:identificador)? _ "|"
-  / "|" _ (numero / id:identificador)? _ "," _ opciones _ "|"
-  / "|" _ (numero / id:identificador)? _ ".." _ (numero / id2:identificador)? _ "," _ opciones _ "|"
+  = "|" _ valor1:(numero / id:identificador) _ "|" {
+    return {min: valor1, caso: "caso1"};
+  }
+  / "|" _ valor1:(numero / id:identificador)? _ ".." _ valor2:(numero / id2:identificador)? _ "|" {
+    return {min: valor1, max: valor2, caso: "caso2"};
+  }
+  / "|" _ valor1:(numero / id:identificador)? _ "," _ intermedio:opciones _ "|" {
+    return {min: valor1, intermedio: intermedio, caso: "caso3"};
+  }
+  / "|" _ valor1:(numero / id:identificador)? _ ".." _ valor2:(numero / id2:identificador)? _ "," _ intermedio:opciones _ "|" {
+    return {min: valor1, max: valor2, intermedio: intermedio, caso: "caso4"};
+  }
 
 predicate
   = "{" [ \t\n\r]* returnType:predicateReturnType code:$[^}]* "}" {
