@@ -42,7 +42,15 @@ module parser
             case(0)
                 cursor = savePoint
                 
-                expr_0_0 = peg_a0_f2()
+                
+                lexemeStart = cursor
+                if (.not. acceptStringCaseInsensitive('hola')) cycle
+
+                do while (.not. cursor > len(input))
+                    if (.not. acceptStringCaseInsensitive('hola')) exit
+                end do
+
+                expr_0_0 = consumeInput()
                 if (.not. acceptEOF()) cycle
                 
             res = toStr(expr_0_0);
@@ -61,50 +69,6 @@ module parser
 
 
     ! Inicio de las acciones
-    
-    function peg_a0_f2() result(res)
-        
-        character(len=:), allocatable :: res
-        integer :: i
-                
-        do i = 0, 2
-            select case(i)
-            
-            case(0)
-                cursor = savePoint
-                
-                
-                lexemeStart = cursor
-                if(.not. acceptString('hola')) cycle
-                expr_0_0 = consumeInput()
-                if (.not. acceptEOF()) cycle
-                
-            res = toStr(expr_0_0);
-        
-
-                exit
-            
-
-            case(1)
-                cursor = savePoint
-                
-                
-                lexemeStart = cursor
-                if(.not. acceptString('adios')) cycle
-                expr_1_0 = consumeInput()
-                if (.not. acceptEOF()) cycle
-                
-            res = toStr(expr_1_0);
-        
-
-                exit
-            
-            case default
-                call pegError()
-            end select
-        end do
-
-    end function peg_a0_f2
     
 
     ! Funciones auxiliares
@@ -198,4 +162,33 @@ module parser
 
         cast = str
     end function strToStr
+
+    function acceptStringCaseInsensitive(str) result(accept)
+        character(len=*) :: str
+        logical :: accept
+        integer :: offset
+
+        offset = len(str) - 1
+        if (tolower(str) /= tolower(input(cursor:cursor + offset))) then
+            accept = .false.
+            return
+        end if
+        cursor = cursor + len(str)
+        accept = .true.
+    end function acceptStringCaseInsensitive
+
+    function tolower(str) result(lower_str)
+        character(len=*), intent(in) :: str
+        character(len=len(str)) :: lower_str
+        integer :: i
+
+        lower_str = str 
+        do i = 1, len(str)
+            if (iachar(str(i:i)) >= iachar('A') .and. iachar(str(i:i)) <= iachar('Z')) then
+                lower_str(i:i) = achar(iachar(str(i:i)) + 32)
+            end if
+        end do
+    end function tolower
+
+
 end module parser

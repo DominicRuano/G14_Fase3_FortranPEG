@@ -199,7 +199,7 @@ export default class FortranTranslator {
             });
         } else if (node.qty) {
             // TODO: Implement repetitions (e.g., |3|, |1..3|, etc...)
-            throw new Error('Repetitions not implemented.');
+            return "! Repeticiones no implementadas";
         } else {
             if (node.expr instanceof CST.Identificador) {
                 return `${getExprId(
