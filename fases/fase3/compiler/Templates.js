@@ -82,6 +82,11 @@ module parser
             accept = .false.
             return
         end if
+        if((findloc([char(13)], input(cursor:cursor), 1) > 0)) then
+            if((findloc([char(10)], input(cursor+1:cursor+1), 1) > 0)) then
+                cursor = cursor + 1
+            end if
+        end if
         cursor = cursor + 1
         accept = .true.
     end function acceptSet

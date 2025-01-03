@@ -394,9 +394,25 @@ export default class FortranTranslator {
         const ranges = node.chars
             .filter((char) => char instanceof CST.Rango)
             .map((range) => range.accept(this));
-        if (set.length !== 0) {
-            characterClass = [`acceptSet([${set.join(',')}])`];
-        }
+            if (set.length !== 0) {
+                // Mapeo de caracteres especiales a sus códigos ASCII
+                const specialChars = {
+                    "' '": "char(32)",
+                    "'\\n'": "char(10)",
+                    "'\\t'": "char(9)",
+                    "'\\r'": "char(13)",
+                    "'\\f'": "char(12)",
+                    "'\\v'": "char(11)"
+                    // Agrega más caracteres especiales si es necesario
+                };
+            
+                // Reemplazar caracteres especiales en el array 'set'
+                const replacedSet = set.map(char => specialChars[char] || char);
+            
+                // Generar el acceptSet con los valores transformados
+                characterClass = [`acceptSet([${replacedSet.join(',')}])`];
+            }
+            
         if (ranges.length !== 0) {
             characterClass = [...characterClass, ...ranges];
         }
