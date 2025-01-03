@@ -164,7 +164,7 @@ module parser
         end do
     end function tolower
 
-    function matchExactRepetition(int, str) result(accept)
+    function matchExactRepetition(int, str) result(accept) ! expression |count|
         integer, intent(in) :: int
         character(len=*) :: str
         logical :: accept
@@ -180,7 +180,7 @@ module parser
         end do
     end function matchExactRepetition
 
-    function matchVariableRepetition(minReps, maxReps, str) result(accept)
+    function matchVariableRepetition(minReps, maxReps, str) result(accept) ! expression |min..max|
         integer, intent(in) :: minReps, maxReps
         character(len=*), intent(in) :: str
         logical :: accept
@@ -202,7 +202,7 @@ module parser
 
     end function matchVariableRepetition
 
-    function matchExactRepetitionWithSeparator(count, str, sep) result(accept)
+    function matchExactRepetitionWithSeparator(count, str, sep) result(accept) ! expression |count, delimiter|
         integer, intent(in) :: count
         character(len=*), intent(in) :: str
         character(len=*), intent(in) :: sep
@@ -225,7 +225,7 @@ module parser
         end do
     end function matchExactRepetitionWithSeparator
 
-    function matchVariableRepetitionWithSeparator(minReps, maxReps, str, sep) result(accept)
+    function matchVariableRepetitionWithSeparator(minReps, maxReps, str, sep) result(accept) ! expression |min..max, delimiter|
         integer, intent(in) :: minReps, maxReps
         character(len=*), intent(in) :: str, sep
         logical :: accept
@@ -323,6 +323,10 @@ export const union = (data) => `
 *  expr: string;
 *  destination: string
 *  quantifier?: string;
+*  count? : Number
+*  min? : Number
+*  max? : Number
+*  delimiter? : string
 * }} data
 * @returns
 */
@@ -358,6 +362,42 @@ export const strExpr = (data) => {
                 lexemeStart = cursor
                 if (.not. ${data.expr}) exit
                 ${data.destination} = consumeInput()`;
+        case "caso1":
+            return `
+                lexemeStart = cursor
+                if (.not. matchExactRepetition(${data.count}, ${data.expr})) then
+                    call pegError()
+                    cycle
+                end if
+                ${data.destination} = consumeInput()
+            `;
+        case "caso2":
+            return `
+                lexemeStart = cursor
+                if (.not. matchVariableRepetition(${data.min}, ${data.max}, ${data.expr})) then
+                    call pegError()
+                    cycle
+                end if
+                ${data.destination} = consumeInput()
+            `;
+        case "caso3":
+            return `
+                lexemeStart = cursor
+                if (.not. matchExactRepetitionWithSeparator(${data.count}, ${data.expr}, '${data.delimiter}')) then
+                    call pegError()
+                    cycle
+                end if
+                ${data.destination} = consumeInput()
+            `;
+        case "caso4":
+            return `
+                lexemeStart = cursor
+                if (.not. matchVariableRepetitionWithSeparator(${data.min}, ${data.max}, ${data.expr}, '${data.delimiter}')) then
+                    call pegError()
+                    cycle
+                end if
+                ${data.destination} = consumeInput()
+            `;
         default:
             throw new Error(
                 `'${data.quantifier}' quantifier needs implementation`

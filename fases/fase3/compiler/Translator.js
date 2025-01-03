@@ -194,12 +194,46 @@ export default class FortranTranslator {
             }
             return Template.strExpr({
                 quantifier: node.qty,
-                expr: node.expr.accept(this),
+                expr: node.expr.accept(node.expr),
                 destination: getExprId(this.currentChoice, this.currentExpr),
             });
         } else if (node.qty) {
             // TODO: Implement repetitions (e.g., |3|, |1..3|, etc...)
-            return "! Repeticiones no implementadas";
+            node.expr.isValue = true
+            switch (node.qty.caso) {
+                case "caso1":
+                    return Template.strExpr({
+                        quantifier: node.qty.caso,
+                        expr: node.expr.accept(this),
+                        destination: getExprId(this.currentChoice, this.currentExpr),
+                        count: node.qty.min
+                    });
+                case "caso2":
+                    return Template.strExpr({
+                        quantifier: node.qty.caso,
+                        expr: node.expr.accept(this),
+                        destination: getExprId(this.currentChoice, this.currentExpr),
+                        min: node.qty.min,
+                        max: node.qty.max
+                    });
+                case "caso3":
+                    return Template.strExpr({
+                        quantifier: node.qty.caso,
+                        expr: node.expr.accept(this),
+                        destination: getExprId(this.currentChoice, this.currentExpr),
+                        count: node.qty.min,
+                        delimiter: node.qty.intermedio
+                });
+                case "caso4":
+                    return Template.strExpr({
+                        quantifier: node.qty.caso,
+                        expr: node.expr.accept(this),
+                        destination: getExprId(this.currentChoice, this.currentExpr),
+                        min: node.qty.min,
+                        max: node.qty.max,
+                        delimiter: node.qty.intermedio
+                });
+            }
         } else {
             if (node.expr instanceof CST.Identificador) {
                 return `${getExprId(
@@ -268,7 +302,10 @@ export default class FortranTranslator {
      * @this {Visitor}
      */
     visitString(node) {
-        console.log("here on visitString");
+        console.log("here on visitString",node.isValue);
+        if (node.isValue) {
+            return `"${node.val}"`;
+        }
         return node.isCase? `acceptStringCaseInsensitive('${node.val}')` : `acceptString('${node.val}')`;
     }
 
